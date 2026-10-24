@@ -1,0 +1,438 @@
+<title>North Pole Post</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  /* Layout concept: a warm "paper" product page that runs a 4-step wizard
+     (welcome -> details -> checkout -> the letter), Christmas palette owned
+     by the subject (evergreen / Santa red / gold on candlelit cream). */
+  :root {
+    --bg: #f7f0e4;
+    --paper: #fffaf1;
+    --ink: #2b2620;
+    --muted: #6d6456;
+    --line: #e4d8c2;
+    --green: #1c5a40;
+    --green-deep: #123c2b;
+    --red: #b23b32;
+    --gold: #bb8c2b;
+    --gold-soft: #e8c876;
+    --shadow: 24px 24px 60px rgba(40,30,15,.14);
+    --font-display: "Fraunces", Georgia, serif;
+    --font-letter: "Cormorant Garamond", Georgia, serif;
+    --font-ui: "Nunito", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10180f;
+      --paper: #182214;
+      --ink: #f1e9d8;
+      --muted: #b2a894;
+      --line: #2c3a28;
+      --green: #4fb286;
+      --green-deep: #2a5c42;
+      --red: #e3756b;
+      --gold: #e0b552;
+      --gold-soft: #6b5520;
+      --shadow: 24px 24px 70px rgba(0,0,0,.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10180f;
+    --paper: #182214;
+    --ink: #f1e9d8;
+    --muted: #b2a894;
+    --line: #2c3a28;
+    --green: #4fb286;
+    --green-deep: #2a5c42;
+    --red: #e3756b;
+    --gold: #e0b552;
+    --gold-soft: #6b5520;
+    --shadow: 24px 24px 70px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); line-height: 1.6; }
+  .wrap { width: 100%; max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left,0px)); padding-right: max(16px, env(safe-area-inset-right,0px)); }
+
+  a { color: var(--green); }
+  h1,h2,h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.12; text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  .eyebrow { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 800; color: var(--gold); }
+
+  /* Header */
+  header { border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--paper) 70%, transparent); }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; }
+  .seal { width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--red), #7e241d); color: #fff5e6; display: grid; place-items: center; font-size: 1rem; box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); flex: none; }
+  .bar small { color: var(--muted); font-weight: 600; }
+
+  /* Hero */
+  .hero { position: relative; overflow: hidden; background:
+      radial-gradient(120% 90% at 85% -10%, color-mix(in srgb, var(--green) 22%, transparent), transparent 60%),
+      radial-gradient(90% 80% at -5% 110%, color-mix(in srgb, var(--red) 16%, transparent), transparent 55%); }
+  #snow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .hero-inner { position: relative; display: grid; grid-template-columns: 1.1fr .9fr; gap: 34px; align-items: center; padding-block: clamp(34px, 6vw, 64px); }
+  .hero h1 { font-size: clamp(2.1rem, 6vw, 3.4rem); letter-spacing: -.01em; }
+  .hero h1 em { font-style: italic; color: var(--red); }
+  .lead { margin-top: 16px; font-size: 1.12rem; color: var(--muted); max-width: 40ch; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 26px; }
+  .price-badge { display: inline-flex; align-items: baseline; gap: 6px; font-family: var(--font-display); }
+  .price-badge b { font-size: 1.5rem; color: var(--green); }
+  .price-badge s { color: var(--muted); font-family: var(--font-ui); }
+  .trust { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .86rem; color: var(--muted); font-weight: 600; }
+  .trust span { display: inline-flex; align-items: center; gap: 6px; }
+
+  /* Envelope art */
+  .env { position: relative; aspect-ratio: 1.45 / 1; max-width: 100%; border-radius: 12px; background: linear-gradient(160deg, #fff, #f4ead6); box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; }
+  .env::before { content:""; position: absolute; inset: 0; background:
+      linear-gradient(to bottom right, transparent 49.4%, rgba(0,0,0,.06) 49.6%, transparent 50%),
+      linear-gradient(to bottom left, transparent 49.4%, rgba(0,0,0,.06) 49.6%, transparent 50%); }
+  .env .flap { position: absolute; top: 0; left: 0; right: 0; height: 56%; background: linear-gradient(180deg, #f0e3c9, #e7d6b2); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .env .wax { position: absolute; left: 50%; top: 42%; transform: translate(-50%,-50%); width: 58px; height: 58px; border-radius: 50%; background: radial-gradient(circle at 36% 32%, var(--red), #7c231c); color: #ffe9cf; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; box-shadow: 0 6px 16px rgba(120,30,20,.4), inset 0 0 0 3px rgba(255,255,255,.18); }
+  .env .stamp { position: absolute; right: 14px; top: 12px; width: 52px; height: 64px; background: var(--paper); border: 2px dashed var(--gold); border-radius: 4px; display: grid; place-items: center; font-size: 1.5rem; }
+  .env .addr { position: absolute; left: 20px; bottom: 18px; font-family: var(--font-letter); color: #4a4335; }
+  .env .addr b { display: block; font-size: 1.15rem; }
+
+  /* Buttons */
+  .btn { appearance: none; border: 0; cursor: pointer; font-family: var(--font-ui); font-weight: 800; font-size: 1rem; padding: 14px 26px; border-radius: 999px; transition: transform .12s ease, box-shadow .2s ease, background .2s; }
+  .btn-primary { background: var(--red); color: #fff6ea; box-shadow: 0 10px 24px color-mix(in srgb, var(--red) 40%, transparent); }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn-green { background: var(--green); color: #f3fbf6; box-shadow: 0 10px 24px color-mix(in srgb, var(--green) 38%, transparent); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+  .btn-block { width: 100%; }
+
+  /* Sections */
+  section { padding-block: clamp(40px, 7vw, 72px); }
+  .sec-head { text-align: center; max-width: 54ch; margin: 0 auto 36px; }
+  .sec-head h2 { font-size: clamp(1.6rem, 4vw, 2.3rem); }
+  .sec-head p { color: var(--muted); margin-top: 12px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+  .step-card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 26px 22px; }
+  .step-num { font-family: var(--font-display); font-weight: 700; color: var(--gold); font-size: 1.3rem; }
+  .step-card h3 { margin: 10px 0 6px; font-size: 1.2rem; }
+  .step-card p { color: var(--muted); font-size: .95rem; }
+
+  /* The builder */
+  .builder { background: var(--green-deep); color: #f4 efe1; }
+  .builder { color: #f2ecdd; }
+  .panel { background: var(--paper); color: var(--ink); border-radius: 20px; box-shadow: var(--shadow); padding: clamp(22px, 4vw, 38px); max-width: 640px; margin: 0 auto; }
+  .progress { display: flex; gap: 8px; margin-bottom: 24px; }
+  .progress i { height: 6px; flex: 1; border-radius: 99px; background: var(--line); }
+  .progress i.on { background: var(--gold); }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-weight: 700; margin-bottom: 7px; font-size: .95rem; }
+  .field label span { color: var(--muted); font-weight: 600; }
+  .field input, .field textarea, .field select { width: 100%; font-family: var(--font-ui); font-size: 1rem; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--gold); border-color: transparent; }
+  .field textarea { min-height: 92px; resize: vertical; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .hint { font-size: .82rem; color: var(--muted); margin-top: 6px; }
+  .err { color: var(--red); font-size: .82rem; margin-top: 6px; font-weight: 700; }
+  .nav-row { display: flex; gap: 12px; margin-top: 8px; }
+  .nav-row .btn { flex: 1; }
+
+  /* Order summary */
+  .order { border: 1px dashed var(--line); border-radius: 14px; padding: 18px; margin-bottom: 20px; background: var(--bg); }
+  .order .row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; }
+  .order .row.total { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 12px; font-weight: 800; font-size: 1.15rem; }
+  .demo-flag { display: inline-flex; align-items: center; gap: 7px; background: color-mix(in srgb, var(--gold) 20%, var(--paper)); color: var(--ink); border: 1px solid var(--gold-soft); font-weight: 700; font-size: .82rem; padding: 7px 12px; border-radius: 99px; margin-bottom: 18px; }
+  .pay-logos { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 14px; font-size: .8rem; color: var(--muted); font-weight: 700; }
+  .pay-logos span { border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; }
+
+  /* The letter */
+  .letter-stage { display: none; }
+  .letter { position: relative; background:
+      repeating-linear-gradient(0deg, transparent, transparent 31px, color-mix(in srgb, var(--gold) 14%, transparent) 32px),
+      var(--paper);
+    border: 1px solid var(--line); border-top: 6px solid var(--red); border-radius: 6px; padding: clamp(24px, 5vw, 46px); box-shadow: var(--shadow); font-family: var(--font-letter); }
+  .letter .np { text-align: center; margin-bottom: 18px; }
+  .letter .np .mark { font-size: 2rem; }
+  .letter .np b { display: block; font-family: var(--font-display); letter-spacing: .14em; text-transform: uppercase; font-size: .78rem; color: var(--red); margin-top: 4px; }
+  .letter .np small { color: var(--muted); font-family: var(--font-ui); letter-spacing: .1em; }
+  .letter .body { font-size: clamp(1.15rem, 2.6vw, 1.42rem); line-height: 1.75; }
+  .letter .body p { margin-bottom: 14px; }
+  .letter .sign { margin-top: 22px; }
+  .letter .sign .santa { font-size: 2.1rem; color: var(--red); line-height: 1; }
+  .letter .nice { display: inline-block; margin-top: 10px; font-family: var(--font-ui); font-weight: 800; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--green); border: 1.5px solid var(--green); border-radius: 99px; padding: 6px 14px; transform: rotate(-4deg); }
+
+  .share { margin-top: 26px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .share h3 { font-size: 1.25rem; }
+  .share p { color: var(--muted); margin-top: 6px; font-size: .95rem; }
+  .ref { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .ref code { flex: 1; min-width: 160px; background: var(--bg); border: 1.5px dashed var(--gold); border-radius: 12px; padding: 12px 16px; font-family: var(--font-ui); font-weight: 800; letter-spacing: .06em; display: flex; align-items: center; justify-content: space-between; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--green-deep); color: #eef7f0; padding: 12px 20px; border-radius: 99px; font-weight: 700; opacity: 0; transition: .25s; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .86rem; }
+  footer .bar { flex-wrap: wrap; }
+
+  @media (max-width: 760px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero .env { order: -1; max-width: 420px; }
+    .steps { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand"><span class="seal">✶</span> North Pole Post <small class="np-tag">&nbsp;· est. the first snow</small></div>
+    <a class="btn btn-ghost" style="padding:9px 18px;font-size:.9rem" href="#make" onclick="go('form')">Make a letter</a>
+  </div>
+</header>
+
+<div class="hero">
+  <canvas id="snow"></canvas>
+  <div class="wrap hero-inner">
+    <div>
+      <p class="eyebrow">Personalised · posted from the North Pole</p>
+      <h1>A real letter from <em>Santa</em>, written just for your child.</h1>
+      <p class="lead">Add your child's name, their age and one good thing they did this year. In seconds you'll get a beautiful, personal letter from Santa — ready to print, frame or send.</p>
+      <div class="cta-row">
+        <button class="btn btn-primary" onclick="go('form')">Create your letter →</button>
+        <span class="price-badge"><b>₹99</b> <s>₹199</s></span>
+      </div>
+      <div class="trust">
+        <span>✶ Ready in under a minute</span>
+        <span>✶ Keepsake quality</span>
+        <span>✶ Made with love, not AI slop</span>
+      </div>
+    </div>
+    <div class="env" aria-hidden="true">
+      <div class="flap"></div>
+      <div class="stamp">🦌</div>
+      <div class="wax">NP</div>
+      <div class="addr"><b>For a very good child</b>Somewhere warm &amp; cosy, Earth</div>
+    </div>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">How it works</p>
+      <h2>Three small steps to Christmas magic</h2>
+      <p>No app, no account. Just a few details and you're done.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card"><div class="step-num">01</div><h3>Tell Santa about the child</h3><p>Their first name, age and one kind or brave thing they did this year.</p></div>
+      <div class="step-card"><div class="step-num">02</div><h3>Pay ₹99 — safely</h3><p>UPI, card or netbanking. Quick and secure. (This demo uses a pretend payment.)</p></div>
+      <div class="step-card"><div class="step-num">03</div><h3>Get the letter instantly</h3><p>A personal letter from Santa appears on screen and lands in your inbox.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="builder" id="make">
+  <div class="wrap">
+    <!-- STEP: FORM -->
+    <div class="panel" id="panel-form">
+      <div class="progress"><i class="on"></i><i></i><i></i></div>
+      <p class="eyebrow" style="color:var(--gold)">Step 1 of 3</p>
+      <h2 style="font-size:1.6rem;margin:6px 0 4px">Tell Santa who it's for</h2>
+      <p style="color:var(--muted);margin-bottom:22px">Santa likes little details — they make the letter feel real.</p>
+
+      <div class="field">
+        <label for="f-name">Child's first name</label>
+        <input id="f-name" type="text" placeholder="e.g. Aarav" autocomplete="off">
+        <div class="err" id="e-name" hidden>Please add the child's name.</div>
+      </div>
+      <div class="two">
+        <div class="field">
+          <label for="f-age">Age <span>(optional)</span></label>
+          <input id="f-age" type="number" min="1" max="17" placeholder="e.g. 6">
+        </div>
+        <div class="field">
+          <label for="f-city">Town / city <span>(optional)</span></label>
+          <input id="f-city" type="text" placeholder="e.g. Pune">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-deed">One good thing they did this year</label>
+        <textarea id="f-deed" placeholder="e.g. helped look after her baby brother and shared her toys"></textarea>
+        <div class="hint">Santa will mention this in the letter. Keep it short and sweet.</div>
+      </div>
+      <div class="field">
+        <label for="f-email">Your email <span>(where we send it)</span></label>
+        <input id="f-email" type="email" placeholder="you@example.com" autocomplete="email">
+        <div class="err" id="e-email" hidden>Please add a valid email.</div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-primary btn-block" onclick="toPay()">Continue to payment →</button>
+      </div>
+    </div>
+
+    <!-- STEP: PAY -->
+    <div class="panel" id="panel-pay" hidden>
+      <div class="progress"><i class="on"></i><i class="on"></i><i></i></div>
+      <p class="eyebrow" style="color:var(--gold)">Step 2 of 3</p>
+      <h2 style="font-size:1.6rem;margin:6px 0 18px">Checkout</h2>
+
+      <div class="demo-flag">🔒 Demo mode — no real money is charged</div>
+      <div class="order">
+        <div class="row"><span>Personalised letter for <b id="sum-name">—</b></span><span>₹199</span></div>
+        <div class="row"><span>Festive season discount</span><span style="color:var(--green)">− ₹100</span></div>
+        <div class="row total"><span>Total</span><span>₹99</span></div>
+      </div>
+      <button class="btn btn-green btn-block" id="pay-btn" onclick="pay()">Pay ₹99 →</button>
+      <div class="pay-logos"><span>UPI</span><span>Cards</span><span>Netbanking</span><span>Wallets</span></div>
+      <div class="nav-row" style="margin-top:18px">
+        <button class="btn btn-ghost" onclick="go('form')">← Back</button>
+      </div>
+    </div>
+
+    <!-- STEP: LETTER -->
+    <div class="letter-stage" id="panel-letter">
+      <div style="text-align:center;margin-bottom:22px">
+        <p class="eyebrow" style="color:var(--gold-soft)">Step 3 of 3 · Delivered</p>
+        <h2 style="color:#fdf6e7;font-size:1.7rem">🎉 Your letter has arrived!</h2>
+        <p style="color:#cfe0d1;margin-top:8px">We've also emailed a copy to <b id="sum-email">you</b>.</p>
+      </div>
+
+      <div class="letter" id="letter-card">
+        <div class="np">
+          <div class="mark">🎅</div>
+          <b>Office of Santa Claus</b>
+          <small id="l-date">North Pole · 1 Mile North of Everywhere</small>
+        </div>
+        <div class="body" id="l-body"></div>
+        <div class="sign">
+          <div class="santa">Santa Claus</div>
+          <span class="nice">✓ On the Nice List</span>
+        </div>
+      </div>
+
+      <div class="share">
+        <h3>Love it? Share the magic 🎁</h3>
+        <p>Send North Pole Post to a friend. When they order with your code, <b>they get ₹20 off</b> — and so do you on your next letter.</p>
+        <div class="ref">
+          <code id="ref-code">SANTA-AARAV99 <button class="btn" style="padding:4px 10px;font-size:.8rem;background:var(--green);color:#fff" onclick="copyRef()">Copy</button></code>
+          <button class="btn btn-ghost" onclick="toast('In the real site this opens WhatsApp with your code ✉️')">Share on WhatsApp</button>
+        </div>
+      </div>
+
+      <div class="nav-row" style="max-width:640px;margin:22px auto 0">
+        <button class="btn btn-ghost" style="color:#fdf6e7;border-color:rgba(255,255,255,.3)" onclick="restart()">Make another letter</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap bar">
+    <span>North Pole Post · a cheerful little demo shop 🎄</span>
+    <span>Secure checkout · Made in India</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var state = { name:'', age:'', city:'', deed:'', email:'' };
+
+  function go(step){
+    document.getElementById('panel-form').hidden   = step!=='form';
+    document.getElementById('panel-pay').hidden    = step!=='pay';
+    document.getElementById('panel-letter').style.display = step==='letter' ? 'block' : 'none';
+    var builder = document.getElementById('make');
+    if(step!=='intro'){ builder.scrollIntoView({behavior:'smooth', block:'start'}); }
+  }
+
+  function toPay(){
+    var name = document.getElementById('f-name').value.trim();
+    var email = document.getElementById('f-email').value.trim();
+    var okName = name.length>0, okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    document.getElementById('e-name').hidden = okName;
+    document.getElementById('e-email').hidden = okEmail;
+    if(!okName || !okEmail) return;
+
+    state.name  = name;
+    state.age   = document.getElementById('f-age').value.trim();
+    state.city  = document.getElementById('f-city').value.trim();
+    state.deed  = document.getElementById('f-deed').value.trim();
+    state.email = email;
+
+    document.getElementById('sum-name').textContent = state.name;
+    go('pay');
+  }
+
+  function pay(){
+    var btn = document.getElementById('pay-btn');
+    btn.disabled = true; btn.textContent = 'Contacting the North Pole…';
+    setTimeout(function(){
+      buildLetter();
+      document.getElementById('sum-email').textContent = state.email;
+      btn.disabled = false; btn.textContent = 'Pay ₹99 →';
+      go('letter');
+      toast('Payment successful (demo) 🎅');
+    }, 1100);
+  }
+
+  function cap(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+
+  function buildLetter(){
+    var n = cap(state.name);
+    var when = new Date();
+    document.getElementById('l-date').textContent = 'North Pole · ' + when.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+
+    var lines = [];
+    lines.push('Dear ' + n + ',');
+
+    var opener = 'All the way up here at the North Pole, the elves and I have been keeping a close eye on you — and ' + n + ', I am so proud of you.';
+    lines.push(opener);
+
+    if(state.deed){
+      lines.push('I heard that you ' + state.deed + '. That is exactly the kind of kindness that makes your name shine on my Nice List.');
+    } else {
+      lines.push('You have been kind, brave and helpful this year, and your name shines bright on my Nice List.');
+    }
+
+    if(state.age){
+      lines.push('Turning ' + state.age + ' is a big deal, you know. Big enough to keep being wonderful, and still small enough to believe in a little Christmas magic.');
+    }
+
+    lines.push((state.city ? 'The reindeer already know the way to ' + cap(state.city) + '. ' : '') + 'So on Christmas Eve, hang your stocking, leave out a biscuit or two, and get a good night’s sleep. I’ll do the rest.');
+    lines.push('Keep being you, ' + n + '. Merry Christmas! 🎄');
+
+    document.getElementById('l-body').innerHTML = lines.map(function(l){ return '<p>'+l+'</p>'; }).join('');
+
+    var code = 'SANTA-' + (n||'FRIEND').toUpperCase().replace(/[^A-Z]/g,'').slice(0,6) + '99';
+    document.getElementById('ref-code').childNodes[0].nodeValue = code + ' ';
+  }
+
+  function copyRef(){
+    var txt = document.getElementById('ref-code').childNodes[0].nodeValue.trim();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ toast('Code copied! 🎁'); }, function(){ toast('Your code: '+txt); });
+    } else { toast('Your code: '+txt); }
+  }
+
+  function restart(){
+    ['f-name','f-age','f-city','f-deed','f-email'].forEach(function(id){ document.getElementById(id).value=''; });
+    go('form');
+  }
+
+  var tTimer;
+  function toast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(tTimer); tTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  /* Gentle snow */
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var c = document.getElementById('snow'); if(!c) return;
+    var ctx = c.getContext('2d'), flakes = [], raf;
+    function size(){ c.width = c.offsetWidth; c.height = c.offsetHeight; }
+    function seed(){ flakes = []; var n = Math.min(70, Math.round(c.width/16)); for(var i=0;i<n;i++){ flakes.push({x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*2.4+0.8, s:Math.random()*0.5+0.2, d:Math.random()*0.6-0.3}); } }
+    function draw(){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='rgba(255,255,255,.75)'; for(var i=0;i<flakes.length;i++){ var f=flakes[i]; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.3); ctx.fill(); f.y+=f.s; f.x+=f.d; if(f.y>c.height){ f.y=-5; f.x=Math.random()*c.width; } } raf=requestAnimationFrame(draw); }
+    size(); seed();
+    if(reduce){ draw(); cancelAnimationFrame(raf); } else { draw(); }
+    window.addEventListener('resize', function(){ size(); seed(); });
+  })();
+</script>
