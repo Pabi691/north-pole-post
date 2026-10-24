@@ -1,0 +1,47 @@
+/* Shared styles for the policy pages (Terms, Privacy, Refund, Contact, Pricing) */
+:root{
+  --bg:#f7f0e4; --paper:#fffaf1; --ink:#2b2620; --muted:#6d6456; --line:#e4d8c2;
+  --green:#1c5a40; --green-deep:#123c2b; --red:#b23b32; --gold:#bb8c2b;
+  --font-display:"Fraunces",Georgia,serif; --font-ui:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#10180f; --paper:#182214; --ink:#f1e9d8; --muted:#b2a894; --line:#2c3a28;
+  --green:#4fb286; --green-deep:#2a5c42; --red:#e3756b; --gold:#e0b552; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#10180f; --paper:#182214; --ink:#f1e9d8; --muted:#b2a894; --line:#2c3a28;
+  --green:#4fb286; --green-deep:#2a5c42; --red:#e3756b; --gold:#e0b552; color-scheme:dark; }
+
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.7;}
+a{color:var(--green);}
+.container{width:100%;max-width:760px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));}
+
+.site-head{border-bottom:1px solid var(--line);background:var(--paper);}
+.site-head .container{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px;}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:1.05rem;}
+.seal{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--red),#7e241d);color:#fff5e6;display:grid;place-items:center;flex:none;}
+.back{font-weight:700;font-size:.9rem;text-decoration:none;}
+
+main{padding-block:clamp(28px,5vw,52px);}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.9rem,5vw,2.6rem);line-height:1.1;margin:0 0 6px;text-wrap:balance;}
+.updated{color:var(--muted);font-size:.9rem;margin:0 0 28px;}
+h2{font-family:var(--font-display);font-weight:600;font-size:1.3rem;margin:30px 0 8px;}
+p,li{color:var(--ink);}
+p{margin:0 0 14px;}
+ul{margin:0 0 16px;padding-left:22px;}
+li{margin-bottom:7px;}
+.lead{font-size:1.1rem;color:var(--muted);margin-bottom:24px;}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:18px 0;}
+.contact-row{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;margin-bottom:12px;}
+.contact-row b{min-width:92px;}
+.price-tag{font-family:var(--font-display);font-weight:700;color:var(--green);font-size:2rem;}
+
+.note{background:color-mix(in srgb,var(--gold) 16%,var(--paper));border:1px solid color-mix(in srgb,var(--gold) 45%,var(--line));border-radius:12px;padding:14px 16px;font-size:.92rem;}
+
+.site-footer{border-top:1px solid var(--line);margin-top:40px;background:var(--paper);color:var(--muted);font-size:.88rem;}
+.site-footer .container{padding-block:24px;text-align:center;}
+.foot-links{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-bottom:12px;}
+.foot-links a{font-weight:700;text-decoration:none;}
