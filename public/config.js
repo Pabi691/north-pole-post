@@ -27,4 +27,17 @@ document.addEventListener("DOMContentLoaded", function () {
   // Hide the Phone row on the Contact page if no phone is set
   var phoneRow = document.getElementById("phone-row");
   if (phoneRow && !S.phone) phoneRow.style.display = "none";
+
+  // Keep the Pricing page price in sync with the live admin price
+  try {
+    if (document.querySelector('[data-site="priceRupees"]')) {
+      fetch('/api/site-config').then(function (r) { return r.json(); }).then(function (c) {
+        if (c && c.season && c.season.pricePaise != null) {
+          var rupees = c.season.pricePaise / 100;
+          var txt = (rupees % 1 === 0) ? rupees.toFixed(0) : rupees.toFixed(2);
+          document.querySelectorAll('[data-site="priceRupees"]').forEach(function (el) { el.textContent = txt; });
+        }
+      }).catch(function () {});
+    }
+  } catch (e) {}
 });
