@@ -81,6 +81,30 @@
   }
   function startParticles(canvas, mode) { if (activeParticles) activeParticles.stop(); activeParticles = createParticles(canvas, mode); }
 
+  /* ---------- spooky sound effects (play even when music is muted) ---------- */
+  var sfx = (function () {
+    var actx = null;
+    function ctx() { try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {} return actx; }
+    function noiseBuf(a, dur) { var n = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0); for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return b; }
+    function splat() { var a = ctx(); if (!a) return; var t = a.currentTime;
+      var o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.18); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.22);
+      var s = a.createBufferSource(); s.buffer = noiseBuf(a, 0.18); var f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1300; var ng = a.createGain(); ng.gain.setValueAtTime(0.45, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.18); s.connect(f); f.connect(ng); ng.connect(a.destination); s.start(t); s.stop(t + 0.18); }
+    function webtear() { var a = ctx(); if (!a) return; var t = a.currentTime; var s = a.createBufferSource(); s.buffer = noiseBuf(a, 0.26); var f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.setValueAtTime(700, t); f.frequency.exponentialRampToValueAtTime(5500, t + 0.22); var g = a.createGain(); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.25); s.connect(f); f.connect(g); g.connect(a.destination); s.start(t); s.stop(t + 0.26); }
+    function boo() { var a = ctx(); if (!a) return; var t = a.currentTime; var o = a.createOscillator(), g = a.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(420, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.5); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.56); }
+    return { splat: splat, webtear: webtear, boo: boo };
+  })();
+
+  function smashPump(el) {
+    if (el.classList.contains('smash')) return;
+    sfx.splat();
+    var play = el.closest('.fx-play');
+    if (play) { var r = el.getBoundingClientRect(), pr = play.getBoundingClientRect(); var sp = document.createElement('div'); sp.className = 'fx-splat'; sp.textContent = '💥'; sp.style.left = (r.left - pr.left + r.width / 2) + 'px'; sp.style.top = (r.top - pr.top) + 'px'; play.appendChild(sp); setTimeout(function () { if (sp.parentNode) sp.parentNode.removeChild(sp); }, 650); }
+    el.classList.add('smash');
+    setTimeout(function () { el.classList.remove('smash'); }, 1300);   // pumpkin grows back
+  }
+  function clearWeb(el) { if (el.classList.contains('cleared')) return; sfx.webtear(); el.classList.add('cleared'); setTimeout(function () { el.classList.remove('cleared'); }, 3200); }
+  function booGhost(el) { sfx.boo(); el.classList.remove('boo'); void el.offsetWidth; el.classList.add('boo'); setTimeout(function () { el.classList.remove('boo'); }, 540); }
+
   /* ---------- render a scene ---------- */
   function render(mount, L, tplId, opts) {
     opts = opts || {};
@@ -102,6 +126,7 @@
           '<div class="fx-eyes" style="top:27%;right:11%;animation-delay:2.4s"></div>' +
           '<div class="fx-ghost">👻</div></div>' +
         '<div class="fx-top"><div class="fx-flash"></div><div class="fx-vignette"></div></div><canvas class="cine-particles-fg"></canvas>' +
+        '<div class="fx-play"><div class="fx-web w-tl">🕸️</div><div class="fx-web w-tr">🕸️</div><div class="fx-ghost-i g1">👻</div><div class="fx-ghost-i g2">👻</div><div class="fx-pumps"><span class="fx-pump">🎃</span><span class="fx-pump">🎃</span><span class="fx-pump">🎃</span></div><div class="fx-hint">👆 tap the pumpkins, webs &amp; ghosts!</div></div>' +
         (opts.scare ? '<div class="fx-scare" id="fx-scare"><span>💀</span></div>' : '');
     }
 
@@ -118,6 +143,7 @@
     startParticles(cine.querySelector('.cine-particles'), theme.particle || 'snow');
     if (activeFg) { activeFg.stop(); activeFg = null; }
     if (spooky) { var fgc = cine.querySelector('.cine-particles-fg'); if (fgc) activeFg = createParticles(fgc, 'bats-fg'); }
+    if (spooky) { var play = cine.querySelector('.fx-play'); if (play) play.addEventListener('click', function (e) { var t = e.target; if (t.classList.contains('fx-pump')) smashPump(t); else if (t.classList.contains('fx-web')) clearWeb(t); else if (t.classList.contains('fx-ghost-i')) booGhost(t); }); }
     requestAnimationFrame(function () { requestAnimationFrame(function () { cine.classList.add('play'); }); });
     if (spooky && opts.scare) { setTimeout(function () { var sc = cine.querySelector('#fx-scare'); if (sc) sc.classList.add('go'); }, 1700); }
     return tpl;
