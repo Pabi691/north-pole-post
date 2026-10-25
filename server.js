@@ -32,7 +32,7 @@ app.get('/api/site-config', async function (req, res) {
   try {
     const cfg = await store.getConfig();
     const s = activeSeason(cfg);
-    res.json({ keyId: process.env.RAZORPAY_KEY_ID || '', ready: keysReady, season: s, friends: friendsCard(s) });
+    res.json({ keyId: process.env.RAZORPAY_KEY_ID || '', ready: keysReady, season: s, friends: friendsCard(s), free: !!cfg.free });
   } catch (e) {
     console.error('site-config failed:', e.message);
     res.status(500).json({ error: 'Could not load site config.' });
@@ -99,6 +99,31 @@ app.post('/api/verify', async function (req, res) {
   } catch (e) {
     console.error('verify failed:', e && e.message ? e.message : e);
     res.status(500).json({ error: 'Something went wrong after payment. Your money is safe — contact support.' });
+  }
+});
+
+// ---------- free unlock (only when Free Mode is ON in admin) ----------
+app.post('/api/free-unlock', async function (req, res) {
+  try {
+    const cfg = await store.getConfig();
+    if (!cfg.free) return res.status(403).json({ error: 'Free mode is off.' });
+    const details = (req.body && req.body.details) || {};
+    const season = activeSeason(cfg);
+    const letter = buildLetter(season, details, details.mode);
+    const cineTpl = details.template || 'globe';
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+    const host = req.headers.host;
+    const shareUrl = host ? (proto + '://' + host + '/letter.html#' + encodeShare(letter, season.key, cineTpl)) : '';
+    let emailed = false;
+    if (details.email) {
+      try { await sendLetterEmail(details.email, season, letter, shareUrl); emailed = true; }
+      catch (e) { console.error('email failed:', e && e.message ? e.message : e); }
+    }
+    try { await store.incr('freebies'); } catch (e) {}
+    res.json({ ok: true, letter: letter, emailed: emailed, shareUrl: shareUrl });
+  } catch (e) {
+    console.error('free-unlock failed:', e && e.message ? e.message : e);
+    res.status(500).json({ error: 'Something went wrong.' });
   }
 });
 

@@ -12,7 +12,7 @@ const URL = process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const useRedis = Boolean(URL && TOKEN);
 const FILE = path.join(__dirname, 'data.json');
-const STAT_FIELDS = ['visits', 'previews', 'purchases', 'revenue'];
+const STAT_FIELDS = ['visits', 'previews', 'purchases', 'revenue', 'freebies'];
 
 async function redis(cmd) {
   const res = await fetch(URL, {

@@ -91,6 +91,16 @@
   </div>
 
   <div class="card">
+    <h2 style="margin-bottom:8px">🎁 Free mode</h2>
+    <p class="muted" style="margin-bottom:10px">When ON, visitors get their card <b>free</b> (payment is hidden). Turn this OFF once Razorpay is activated and your live keys are in.</p>
+    <div class="save-row">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:800;color:var(--ink)"><input type="checkbox" id="free-toggle" style="width:auto"> Free for everyone</label>
+      <button class="btn green" onclick="saveFree()">Save</button>
+      <span id="free-current" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="topbar" style="margin-bottom:12px">
       <h2>✏️ Edit a season</h2>
       <select id="edit-select" style="max-width:220px" onchange="loadSeasonForm(this.value)"></select>
@@ -184,6 +194,7 @@
         document.getElementById('storage-badge').textContent='storage: '+d.storage;
         renderStats(d.stats);
         populateSelects();
+        loadFree();
         loadSeasonForm(d.config.active);
       })
       .catch(function(){ PW=''; try{ sessionStorage.removeItem('npp_admin_pw'); }catch(e){} document.getElementById('login').style.display='block'; document.getElementById('dash').hidden=true; });
@@ -192,7 +203,7 @@
   function renderStats(s){
     var conv = s.visits ? ((s.purchases/s.visits)*100).toFixed(1)+'%' : '—';
     var rev = '₹'+((s.revenue||0)/100).toFixed(0);
-    var cards=[['Visitors',s.visits],['Previews made',s.previews],['Letters sold',s.purchases],['Conversion',conv],['Revenue',rev]];
+    var cards=[['Visitors',s.visits],['Previews made',s.previews],['Letters sold',s.purchases],['Free sends',s.freebies||0],['Conversion',conv],['Revenue',rev]];
     document.getElementById('stats').innerHTML=cards.map(function(c){ return '<div class="stat"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div></div>'; }).join('');
     document.getElementById('stats-note').textContent='Visitors = page opens · Previews = letters previewed · Letters sold = paid.';
   }
@@ -228,6 +239,10 @@
     saveConfig('Active season set ✅');
     document.getElementById('active-current').textContent='Currently: '+((DATA.config.seasons[DATA.config.active]||{}).label||DATA.config.active);
   }
+
+  function loadFree(){ var t=document.getElementById('free-toggle'); if(t) t.checked=!!DATA.config.free; updateFreeLabel(); }
+  function updateFreeLabel(){ var el=document.getElementById('free-current'); if(el) el.textContent = DATA.config.free ? 'Currently: FREE for everyone 🎁' : 'Currently: paid (₹ shown)'; }
+  function saveFree(){ DATA.config.free = document.getElementById('free-toggle').checked; updateFreeLabel(); saveConfig(DATA.config.free ? 'Free mode ON ✅' : 'Free mode OFF ✅'); }
   function saveConfig(msg){
     fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':PW},body:JSON.stringify({config:DATA.config})})
       .then(function(r){return r.json();}).then(function(d){ if(d.ok){ toast(msg); populateSelects(); loadSeasonForm(editingKey); } else { toast(d.error||'Save failed'); } })

@@ -235,7 +235,7 @@
             <input id="f-email" type="email" placeholder="you@example.com" autocomplete="email">
             <div class="err" id="e-email" hidden>Please add a valid email.</div>
           </div>
-          <button class="btn btn-green" id="pay-btn" onclick="payAndSend()" style="align-self:flex-end;white-space:nowrap">Pay <span id="pay-amt">₹—</span> &amp; Send 🎁</button>
+          <button class="btn btn-green" id="pay-btn" onclick="sendCard()" style="align-self:flex-end;white-space:nowrap">Pay <span id="pay-amt">₹—</span> &amp; Send 🎁</button>
         </div>
         <div class="pay-logos"><span>UPI</span><span>Cards</span><span>Netbanking</span><span>Wallets</span></div>
       </div>
@@ -274,6 +274,7 @@
   var state = { name:'', age:'', city:'', deed:'', email:'', template:'globe', mode:'kids' };
   var SEASON = null;         // active season (from server)
   var FRIENDS_TPL = null;    // friends card for the active season
+  var FREE = false;          // free mode (payments hidden)
   var keyId = '', ready = false, shareUrl = '', paid = false, letterObj = null;
 
   function curPrice(){ return (SEASON && SEASON.pricePaise) ? parseInt(SEASON.pricePaise,10) : 1000; }
@@ -304,9 +305,9 @@
   function renderDecor(key){ var row=document.getElementById('decor'); if(!row) return; var list=DECOR[key]||[]; row.innerHTML=list.map(function(e){ return '<span>'+e+'</span>'; }).join(''); }
 
   fetch('/api/site-config').then(function(r){ return r.json(); }).then(function(c){
-    keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null;
+    keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null; FREE = !!c.free;
     applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key); Cinematic.music.setAudio(SITE_AUDIO[SEASON.key]||null);
-    if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
+    if(FREE){ applyFreeUI(); } else if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
   }).catch(function(){});
   fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:'visit'})}).catch(function(){});
 
@@ -362,7 +363,29 @@
   }
   function selectTemplate(id){ state.template=id; buildSwitch(); renderPreview(); }
 
-  function resetPay(){ var b=document.getElementById('pay-btn'); b.disabled=!ready; b.innerHTML='Pay <span id="pay-amt">'+rupees(curPrice())+'</span> &amp; Send 🎁'; }
+  function resetPay(){ var b=document.getElementById('pay-btn'); b.disabled = FREE ? false : !ready; b.innerHTML = FREE ? 'Get your card — Free 🎁' : ('Pay <span id="pay-amt">'+rupees(curPrice())+'</span> &amp; Send 🎁'); }
+
+  function applyFreeUI(){
+    var pb=document.querySelector('.price-badge'); if(pb) pb.textContent='Free to create & send 🎁';
+    var nr=document.getElementById('not-ready'); if(nr) nr.style.display='none';
+    var pl=document.querySelector('.pay-logos'); if(pl) pl.style.display='none';
+    var h=document.querySelector('#send-box h3'); if(h) h.textContent='Get your card 🎁';
+    var p=document.querySelector('#send-box p'); if(p) p.textContent="It's completely free right now! Add your email to also get a copy (optional).";
+    resetPay();
+  }
+
+  function sendCard(){ if(FREE) freeUnlock(); else payAndSend(); }
+
+  function freeUnlock(){
+    var email=document.getElementById('f-email').value.trim();
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('e-email').hidden=false; return; }
+    document.getElementById('e-email').hidden=true; state.email=email;
+    var b=document.getElementById('pay-btn'); b.disabled=true; b.textContent='Creating your card…';
+    fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})})
+      .then(function(r){ return r.json(); })
+      .then(function(data){ if(data.ok){ unlock(data); } else { toast(data.error||'Could not create.'); resetPay(); } })
+      .catch(function(){ toast('Network error.'); resetPay(); });
+  }
 
   function payAndSend(){
     var email=document.getElementById('f-email').value.trim();
