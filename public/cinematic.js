@@ -143,7 +143,7 @@
              [N.F4,1.5],[N.F4,0.5],[N.A4,1],[N.C5,1],[N.D5,2],[N.D5,1],[N.C5,1],[N.A4,1],[N.F4,1],[N.G4,2]] }
   };
   var music = (function () {
-    var actx=null, playing=false, timer=null, cb=null, tune=TUNES.jingle;
+    var actx=null, playing=false, timer=null, cb=null, tune=TUNES.jingle, audioEl=null, audioUrl=null;
     function once() {
       if (!actx) return; var beat=tune.beat, t=actx.currentTime+0.06, start=t;
       tune.notes.forEach(function (nd) {
@@ -169,11 +169,31 @@
       timer=setTimeout(function () { if (playing) once(); }, (total+0.5)*1000);
     }
     function fire(){ if(cb) cb(playing); }
-    function start(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); if(!playing){ playing=true; once(); fire(); } }catch(e){} }
-    function stop(){ playing=false; if(timer) clearTimeout(timer); fire(); }
+    function setAudio(url){
+      audioUrl = url || null;
+      if (audioUrl) {
+        if (!audioEl) { audioEl = new Audio(); audioEl.loop = true; audioEl.preload = 'auto'; audioEl.volume = 0.5; }
+        if (audioEl.getAttribute('data-src') !== audioUrl) { audioEl.src = audioUrl; audioEl.setAttribute('data-src', audioUrl); }
+      }
+    }
+    function start(){
+      try {
+        if (audioUrl) {
+          if (!audioEl) setAudio(audioUrl);
+          var pr = audioEl.play();
+          if (pr && pr.then) pr.then(function(){ playing=true; fire(); }).catch(function(){ playing=false; fire(); });
+          else { playing=true; fire(); }
+          return;
+        }
+        if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+        if (actx.state==='suspended') actx.resume();
+        if (!playing){ playing=true; once(); fire(); }
+      } catch(e){}
+    }
+    function stop(){ playing=false; if (audioEl) { try{ audioEl.pause(); }catch(e){} } if (timer) clearTimeout(timer); fire(); }
     function toggle(){ playing?stop():start(); }
     function setSeason(key){ var name=SEASON_TUNES[key]; if(name && TUNES[name]) tune=TUNES[name]; }
-    return { start:start, stop:stop, toggle:toggle, isPlaying:function(){return playing;}, onChange:function(f){cb=f;}, setSeason:setSeason };
+    return { start:start, stop:stop, toggle:toggle, isPlaying:function(){return playing;}, onChange:function(f){cb=f;}, setSeason:setSeason, setAudio:setAudio };
   })();
 
   window.Cinematic = {

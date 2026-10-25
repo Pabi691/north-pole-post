@@ -292,11 +292,12 @@
   }
 
   var DECOR = { halloween:['🎃','🕸️','👻','🕯️','🦇'], christmas:['🎄','🎁','⛄','🔔','❄️'], newyear:['🎆','🥂','🎉','🕛','✨'] };
+  var SITE_AUDIO = { halloween:'kiravale-horror-music-593677.mp3' };  // real music files per season (others fall back to synth)
   function renderDecor(key){ var row=document.getElementById('decor'); if(!row) return; var list=DECOR[key]||[]; row.innerHTML=list.map(function(e){ return '<span>'+e+'</span>'; }).join(''); }
 
   fetch('/api/site-config').then(function(r){ return r.json(); }).then(function(c){
     keyId = c.keyId; ready = c.ready; SEASON = c.season;
-    applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key);
+    applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key); Cinematic.music.setAudio(SITE_AUDIO[SEASON.key]||null);
     if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
   }).catch(function(){});
   fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:'visit'})}).catch(function(){});

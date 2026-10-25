@@ -67,6 +67,8 @@
 
 <script src="cinematic.js"></script>
 <script>
+  var CARD_AUDIO = { halloween:'bombinsound-halloween-suspense-horror-halloween-waltz-619348.mp3' };  // music for the shared card, per season
+
   function b64decode(str){
     str=String(str).replace(/-/g,'+').replace(/_/g,'/'); while(str.length%4) str+='=';
     var bin=atob(str), bytes=new Uint8Array(bin.length);
@@ -97,6 +99,7 @@
       Cinematic.render(document.getElementById('cine-mount'), L, cineTpl, { watermark:false, theme:theme });
       document.getElementById('music').style.display='grid';
       Cinematic.music.setSeason(seasonKey);
+      Cinematic.music.setAudio(CARD_AUDIO[seasonKey]||null);
       Cinematic.music.start();
     });
   } else {
