@@ -6,7 +6,7 @@
 window.SITE = {
   brand:        "North Pole Post",                                   // your shop name
   legalName:    "Pabitra Haldar",                                    // your legal name (Individual account)
-  email:        "pabitra691@gmail.com",                              // your contact email
+  email:        "hello.northpolepost@gmail.com",                     // your contact email
   phone:        "",                                                  // optional — add a number here later if you like, e.g. "+91 9XXXXXXXXX"
   city:         "Raidighi, South 24 Parganas, West Bengal 743349",   // your location
   priceRupees:  "10",                                                // price shown on the Pricing page (match PRICE_PAISE ÷ 100)
