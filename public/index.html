@@ -62,7 +62,11 @@
   .sound-fab button{width:54px;height:54px;border-radius:50%;border:0;cursor:pointer;background:var(--gold);color:#201400;font-size:1.35rem;box-shadow:0 10px 24px rgba(0,0,0,.4);display:grid;place-items:center;flex:none;}
   .sound-fab button.pulse{animation:spulse 1.8s ease-in-out infinite;}
   @keyframes spulse{0%{box-shadow:0 10px 24px rgba(0,0,0,.4),0 0 0 0 color-mix(in srgb,var(--gold) 55%,transparent);}70%,100%{box-shadow:0 10px 24px rgba(0,0,0,.4),0 0 0 16px transparent;}}
-  @media (prefers-reduced-motion:reduce){ .hero-copy>*{opacity:1;transform:none;animation:none;} .fog i,.hero h1 em,.sound-fab button.pulse{animation:none;} }
+  .decor-row{position:absolute;left:0;right:0;bottom:6px;display:flex;justify-content:space-around;align-items:flex-end;padding:0 5%;pointer-events:none;}
+  .decor-row span{font-size:clamp(26px,5vw,50px);filter:drop-shadow(0 0 14px color-mix(in srgb,var(--gold) 65%,transparent));animation:bobby 4.5s ease-in-out infinite;}
+  .decor-row span:nth-child(2){animation-delay:.7s;} .decor-row span:nth-child(3){animation-delay:1.4s;} .decor-row span:nth-child(4){animation-delay:2.1s;} .decor-row span:nth-child(5){animation-delay:2.8s;}
+  @keyframes bobby{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-9px) rotate(3deg);}}
+  @media (prefers-reduced-motion:reduce){ .hero-copy>*{opacity:1;transform:none;animation:none;} .fog i,.hero h1 em,.sound-fab button.pulse,.decor-row span{animation:none;} }
   .hero-inner{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center;padding-block:clamp(34px,6vw,60px);}
   .hero h1{font-size:clamp(2rem,6vw,3.3rem);letter-spacing:-.01em;}
   .hero h1 em{font-style:italic;color:var(--red);}
@@ -146,7 +150,7 @@
 </header>
 
 <div class="hero">
-  <div class="hero-sky"><div class="moon"></div><div class="fog"><i></i><i></i><i></i></div><canvas id="hero-amb"></canvas><div class="vignette"></div></div>
+  <div class="hero-sky"><div class="moon"></div><div class="fog"><i></i><i></i><i></i></div><canvas id="hero-amb"></canvas><div class="vignette"></div><div class="decor-row" id="decor"></div></div>
   <div class="wrap hero-inner">
     <div class="hero-copy">
       <p class="eyebrow">Personalised · made with love</p>
@@ -287,9 +291,12 @@
     document.getElementById('pay-amt').textContent = pr;
   }
 
+  var DECOR = { halloween:['🎃','🕸️','👻','🕯️','🦇'], christmas:['🎄','🎁','⛄','🔔','❄️'], newyear:['🎆','🥂','🎉','🕛','✨'] };
+  function renderDecor(key){ var row=document.getElementById('decor'); if(!row) return; var list=DECOR[key]||[]; row.innerHTML=list.map(function(e){ return '<span>'+e+'</span>'; }).join(''); }
+
   fetch('/api/site-config').then(function(r){ return r.json(); }).then(function(c){
     keyId = c.keyId; ready = c.ready; SEASON = c.season;
-    applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient();
+    applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key);
     if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
   }).catch(function(){});
   fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:'visit'})}).catch(function(){});

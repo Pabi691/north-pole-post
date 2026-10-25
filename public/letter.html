@@ -74,12 +74,12 @@
     return JSON.parse(new TextDecoder().decode(bytes));
   }
 
-  var ok=false, L=null, theme=null, cineTpl='globe';
+  var ok=false, L=null, theme=null, cineTpl='globe', seasonKey='christmas';
   try {
     var hash=location.hash.replace(/^#/,''); if(!hash) throw new Error('no data');
     var d=b64decode(hash);
     L={ name:d.n, paragraphs:d.P||[], date:d.dt||'', emoji:d.em, senderTitle:d.st, senderName:d.sn, dateline:d.dl, badge:d.bd };
-    theme=Cinematic.themeForSeason(d.sk); cineTpl=d.ct||'globe'; ok=true;
+    theme=Cinematic.themeForSeason(d.sk); cineTpl=d.ct||'globe'; seasonKey=d.sk||'christmas'; ok=true;
   } catch(e){ ok=false; }
 
   if(ok){
@@ -96,6 +96,7 @@
       document.getElementById('page').style.display='block';
       Cinematic.render(document.getElementById('cine-mount'), L, cineTpl, { watermark:false, theme:theme });
       document.getElementById('music').style.display='grid';
+      Cinematic.music.setSeason(seasonKey);
       Cinematic.music.start();
     });
   } else {

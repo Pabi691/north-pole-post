@@ -122,27 +122,58 @@
     return { name:d.name, paragraphs:p, date:date, emoji:season.emoji, senderName:season.senderName, senderTitle:season.senderTitle, dateline:season.dateline, badge:season.badge };
   }
 
-  /* ---------- music: gentle synth of "Jingle Bells" (public domain) ---------- */
+  /* ---------- music: a different public-domain tune per season ---------- */
+  var SEASON_TUNES = { halloween: 'horror', christmas: 'jingle', newyear: 'auld' };
+  var N = { C3:130.81, D3:146.83, Eb3:155.56, E3:164.81, F3:174.61, G3:196, Ab3:207.65, A3:220, Bb3:233.08, B3:246.94,
+            C4:261.63, Db4:277.18, D4:293.66, Eb4:311.13, E4:329.63, F4:349.23, G4:392.00, A4:440, B4:493.88, C5:523.25, D5:587.33 };
+  var TUNES = {
+    // Jingle Bells — bright triangle
+    jingle: { beat:0.34, wave:'triangle', detune:0, drone:0, gain:0.15,
+      notes:[[N.E4,1],[N.E4,1],[N.E4,2],[N.E4,1],[N.E4,1],[N.E4,2],[N.E4,1],[N.G4,1],[N.C4,1.5],[N.D4,0.5],[N.E4,3],
+             [N.F4,1],[N.F4,1],[N.F4,1.5],[N.F4,0.5],[N.F4,1],[N.E4,1],[N.E4,0.5],[N.E4,0.5],[N.E4,1],[N.D4,1],[N.D4,1],[N.E4,1],[N.D4,2],[N.G4,2]] },
+    // Eerie, slow, chromatic minor theme with a low drone — Halloween
+    horror: { beat:0.5, wave:'sawtooth', detune:9, drone:55, gain:0.085,
+      notes:[[N.D4,1.5],[N.Eb4,0.5],[N.D4,1],[N.Db4,1],[N.B3,2],
+             [N.D4,1.5],[N.Eb4,0.5],[N.D4,1],[N.A3,1],[N.Bb3,2],
+             [N.A3,1],[N.Bb3,1],[N.B3,1],[N.A3,1],[N.Ab3,2],
+             [0,1],[N.D3,4]] },
+    // Auld Lang Syne — warm triangle, New Year
+    auld: { beat:0.42, wave:'triangle', detune:0, drone:0, gain:0.14,
+      notes:[[N.C4,1],[N.F4,1.5],[N.F4,0.5],[N.F4,1],[N.A4,1],[N.G4,1.5],[N.F4,0.5],[N.G4,1],[N.A4,1],
+             [N.F4,1.5],[N.F4,0.5],[N.A4,1],[N.C5,1],[N.D5,2],[N.D5,1],[N.C5,1],[N.A4,1],[N.F4,1],[N.G4,2]] }
+  };
   var music = (function () {
-    var FREQ = { C:261.63, D:293.66, E:329.63, F:349.23, G:392.00, A:440, B:493.88 };
-    var M = [['E',1],['E',1],['E',2],['E',1],['E',1],['E',2],['E',1],['G',1],['C',1.5],['D',0.5],['E',3],
-             ['F',1],['F',1],['F',1.5],['F',0.5],['F',1],['E',1],['E',0.5],['E',0.5],['E',1],['D',1],['D',1],['E',1],['D',2],['G',2]];
-    var actx = null, playing = false, timer = null, cb = null;
+    var actx=null, playing=false, timer=null, cb=null, tune=TUNES.jingle;
     function once() {
-      if (!actx) return; var beat = 0.34, t = actx.currentTime + 0.06;
-      M.forEach(function (nd) {
-        var f = FREQ[nd[0]], dur = nd[1]*beat, o = actx.createOscillator(), g = actx.createGain();
-        o.type = 'triangle'; o.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.15, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur*0.92);
-        o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur); t += dur;
+      if (!actx) return; var beat=tune.beat, t=actx.currentTime+0.06, start=t;
+      tune.notes.forEach(function (nd) {
+        var f=nd[0], dur=nd[1]*beat;
+        if (f>0) {
+          (tune.detune ? [0, tune.detune] : [0]).forEach(function (dt) {
+            var o=actx.createOscillator(), g=actx.createGain();
+            o.type=tune.wave; o.frequency.value=f; if (dt) o.detune.value=dt;
+            g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(tune.gain,t+0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+dur*0.9);
+            o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+dur);
+          });
+        }
+        t+=dur;
       });
-      timer = setTimeout(function () { if (playing) once(); }, (t - actx.currentTime + 0.5) * 1000);
+      var total=t-start;
+      if (tune.drone) {
+        var od=actx.createOscillator(), gd=actx.createGain();
+        od.type='sine'; od.frequency.value=tune.drone;
+        gd.gain.setValueAtTime(0.0001,start); gd.gain.exponentialRampToValueAtTime(0.05,start+0.6);
+        gd.gain.setValueAtTime(0.05, Math.max(start+0.7, start+total-0.6)); gd.gain.exponentialRampToValueAtTime(0.0001,start+total);
+        od.connect(gd); gd.connect(actx.destination); od.start(start); od.stop(start+total+0.1);
+      }
+      timer=setTimeout(function () { if (playing) once(); }, (total+0.5)*1000);
     }
-    function fire() { if (cb) cb(playing); }
-    function start() { try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); if (!playing) { playing = true; once(); fire(); } } catch (e) {} }
-    function stop() { playing = false; if (timer) clearTimeout(timer); fire(); }
-    function toggle() { playing ? stop() : start(); }
-    return { start: start, stop: stop, toggle: toggle, isPlaying: function () { return playing; }, onChange: function (f) { cb = f; } };
+    function fire(){ if(cb) cb(playing); }
+    function start(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); if(!playing){ playing=true; once(); fire(); } }catch(e){} }
+    function stop(){ playing=false; if(timer) clearTimeout(timer); fire(); }
+    function toggle(){ playing?stop():start(); }
+    function setSeason(key){ var name=SEASON_TUNES[key]; if(name && TUNES[name]) tune=TUNES[name]; }
+    return { start:start, stop:stop, toggle:toggle, isPlaying:function(){return playing;}, onChange:function(f){cb=f;}, setSeason:setSeason };
   })();
 
   window.Cinematic = {
