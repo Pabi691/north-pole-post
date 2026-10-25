@@ -24,6 +24,7 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 const FREE_LIMIT = parseInt(process.env.FREE_LIMIT || '10', 10);
 function genCode() { const c = 'abcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < 8; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+async function bump(field, by) { try { await store.incr(field, by || 1); await store.incrDaily(field, by || 1); } catch (e) {} }
 const keysReady = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 const razorpay = keysReady
   ? new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET })
@@ -45,8 +46,8 @@ app.get('/api/site-config', async function (req, res) {
 app.post('/api/track', async function (req, res) {
   try {
     const ev = (req.body && req.body.event) || '';
-    if (ev === 'visit') await store.incr('visits');
-    else if (ev === 'preview') await store.incr('previews');
+    if (ev === 'visit') await bump('visits');
+    else if (ev === 'preview') await bump('previews');
     res.json({ ok: true });
   } catch (e) { res.json({ ok: false }); }
 });
@@ -98,7 +99,7 @@ app.post('/api/verify', async function (req, res) {
     }
 
     // record the sale
-    try { await store.incr('purchases'); await store.incr('revenue', parseInt(season.pricePaise, 10) || 0); } catch (e) {}
+    try { await bump('purchases'); await bump('revenue', parseInt(season.pricePaise, 10) || 0); await store.logTxn({ t: Date.now(), type: 'paid', season: season.key, amount: parseInt(season.pricePaise, 10) || 0, name: String(details.name || '').slice(0, 40), device: String(details.device || '').slice(0, 20) }); } catch (e) {}
 
     res.json({ ok: true, letter: letter, emailed: emailed, shareUrl: shareUrl });
   } catch (e) {
@@ -134,7 +135,7 @@ app.post('/api/free-unlock', async function (req, res) {
     }
     let used = 0;
     if (device) { try { used = await store.incrDevice(device); } catch (e) {} }
-    try { await store.incr('freebies'); } catch (e) {}
+    try { await bump('freebies'); await store.logTxn({ t: Date.now(), type: 'free', season: season.key, amount: 0, name: String(details.name || '').slice(0, 40), device: device }); } catch (e) {}
     res.json({ ok: true, letter: letter, emailed: emailed, shareUrl: shareUrl, used: used, limit: FREE_LIMIT });
   } catch (e) {
     console.error('free-unlock failed:', e && e.message ? e.message : e);
@@ -173,7 +174,9 @@ app.get('/api/admin/data', checkAdmin, async function (req, res) {
     const stats = await store.getStats();
     const cfg = await store.getConfig();
     const devices = await store.listDevices();
-    res.json({ stats: stats, config: cfg, devices: devices, freeLimit: FREE_LIMIT, ready: keysReady, storage: store.useRedis ? 'Upstash (persistent)' : 'local file (resets on restart)' });
+    const daily = await store.getDaily(14);
+    const txns = await store.listTxns(100);
+    res.json({ stats: stats, config: cfg, devices: devices, daily: daily, txns: txns, freeLimit: FREE_LIMIT, ready: keysReady, storage: store.useRedis ? 'Upstash (persistent)' : 'local file (resets on restart)' });
   } catch (e) { res.status(500).json({ error: 'Could not load admin data.' }); }
 });
 

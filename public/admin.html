@@ -6,10 +6,12 @@
 <title>Letter Shop — Admin</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{
-    --bg:#0d1220; --panel:#151d2e; --panel2:#1b2436; --tile:#111a29; --ink:#eaf0f8; --muted:#8e9bb3; --line:#263048;
+    --bg:#0d1220; --panel:#151d2e; --tile:#111a29; --ink:#eaf0f8; --muted:#8e9bb3; --line:#263048;
     --accent:#7c8cff; --green:#46c08a; --amber:#e3b64d; --red:#ec7a6e; --blue:#5f9bff; --violet:#b48cff;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
     color-scheme:dark;
   }
   *{box-sizing:border-box;}
@@ -17,10 +19,9 @@
       radial-gradient(900px 500px at 100% -10%, rgba(124,140,255,.10), transparent 60%),
       radial-gradient(800px 500px at -10% 110%, rgba(70,192,138,.08), transparent 55%), var(--bg);
     color:var(--ink);font-family:"Nunito",system-ui,sans-serif;line-height:1.5;}
-  .wrap{max-width:980px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left)) 70px;}
+  .wrap{max-width:1000px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left)) 70px;}
   h1,h2,h3{margin:0;font-weight:800;}
-  a{color:var(--accent);}
-  .muted{color:var(--muted);}
+  a{color:var(--accent);} .muted{color:var(--muted);}
 
   .btn{appearance:none;border:0;cursor:pointer;font-family:inherit;font-weight:800;font-size:.92rem;padding:10px 16px;border-radius:10px;background:var(--accent);color:#0b1020;transition:filter .15s,transform .1s;text-decoration:none;display:inline-flex;align-items:center;gap:7px;justify-content:center;}
   .btn:hover{filter:brightness(1.08);} .btn:active{transform:translateY(1px);}
@@ -33,54 +34,58 @@
   textarea{min-height:60px;resize:vertical;}
   label{display:block;font-size:.8rem;font-weight:700;color:var(--muted);margin:0 0 5px;}
 
-  /* header */
-  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
   .brand{display:flex;align-items:center;gap:11px;}
   .brand .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(140deg,var(--accent),#5566e0);display:grid;place-items:center;font-size:1.3rem;box-shadow:0 8px 20px rgba(124,140,255,.35);}
   .brand h1{font-size:1.25rem;letter-spacing:-.01em;}
   .brand .sub{font-size:.76rem;color:var(--muted);font-weight:700;}
   .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
-  /* status pills */
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:20px;}
+  .tab{padding:11px 18px;cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;display:inline-flex;align-items:center;gap:7px;}
+  .tab:hover{color:var(--ink);}
+  .tab.active{color:var(--ink);border-bottom-color:var(--accent);}
+
+  .view{display:none;} .view.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
   .status{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
   .pill{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;position:relative;overflow:hidden;}
   .pill::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);}
-  .pill.green::before{background:var(--green);} .pill.blue::before{background:var(--blue);} .pill.amber::before{background:var(--amber);} .pill.red::before{background:var(--red);} .pill.violet::before{background:var(--violet);}
+  .pill.green::before{background:var(--green);} .pill.blue::before{background:var(--blue);} .pill.amber::before{background:var(--amber);} .pill.red::before{background:var(--red);}
   .pill .l{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:800;}
   .pill .v{font-size:1.02rem;font-weight:800;margin-top:3px;}
 
-  /* cards */
   .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 10px 30px rgba(0,0,0,.25);}
   .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
-  .card-h h2{font-size:1.1rem;display:flex;align-items:center;gap:9px;}
+  .card-h h2{font-size:1.08rem;display:flex;align-items:center;gap:9px;}
   .card-h .hint{font-size:.8rem;color:var(--muted);}
 
-  /* stat tiles */
   .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
   .tile{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:15px 16px;}
   .tile-top{display:flex;align-items:center;gap:9px;}
   .tile-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:1rem;flex:none;}
-  .tile-k{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;}
+  .tile-k{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;}
   .tile-v{font-size:2rem;font-weight:900;letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums;}
 
-  /* two-column controls */
+  .chart-box{position:relative;height:300px;margin-top:4px;}
+  .legend-note{font-size:.76rem;color:var(--muted);margin-top:8px;}
+
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   .sub{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:16px;}
-  .sub h3{font-size:1rem;margin-bottom:4px;}
-  .sub p{font-size:.84rem;color:var(--muted);margin:0 0 12px;}
+  .sub h3{font-size:1rem;margin-bottom:4px;} .sub p{font-size:.84rem;color:var(--muted);margin:0 0 12px;}
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
   .switch{display:flex;align-items:center;gap:10px;font-weight:800;}
   .switch input{width:auto;transform:scale(1.25);accent-color:var(--green);}
-  .tag{font-size:.78rem;font-weight:800;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);}
 
-  /* devices table */
-  .dev-head{font-size:.84rem;color:var(--muted);margin-bottom:10px;font-weight:700;}
   table{width:100%;border-collapse:collapse;}
-  th{text-align:left;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;font-weight:800;padding-bottom:6px;border-bottom:1px solid var(--line);}
-  td{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+  th{text-align:left;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;font-weight:800;padding:0 8px 8px 0;border-bottom:1px solid var(--line);}
+  td{padding:10px 8px 10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.9rem;}
   .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;color:var(--muted);}
+  .badge{font-size:.72rem;font-weight:800;padding:3px 9px;border-radius:99px;}
+  .badge.paid{background:rgba(70,192,138,.15);color:var(--green);} .badge.free{background:rgba(227,182,77,.15);color:var(--amber);}
+  .tbl-wrap{max-height:420px;overflow:auto;}
 
-  /* editor */
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
   .field{margin-bottom:12px;}
@@ -94,16 +99,13 @@
 
   #login{max-width:380px;margin:14vh auto 0;}
   #login .logo-big{width:56px;height:56px;border-radius:16px;background:linear-gradient(140deg,var(--accent),#5566e0);display:grid;place-items:center;font-size:1.7rem;margin:0 auto 14px;}
-
   .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:#0f1829;border:1px solid var(--line);color:#eafff2;padding:12px 20px;border-radius:12px;font-weight:800;opacity:0;transition:.25s;box-shadow:0 12px 34px rgba(0,0,0,.5);z-index:60;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
   @media (max-width:680px){ .cols,.grid2,.grid3{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login" class="wrap">
   <div class="logo-big">🎛️</div>
   <h1 style="text-align:center;margin-bottom:6px">Admin sign in</h1>
@@ -119,13 +121,9 @@
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dash" class="wrap" hidden>
   <div class="top">
-    <div class="brand">
-      <div class="logo">🎛️</div>
-      <div><h1>Letter Shop</h1><div class="sub">Admin dashboard</div></div>
-    </div>
+    <div class="brand"><div class="logo">🎛️</div><div><h1>Letter Shop</h1><div class="sub">Admin dashboard</div></div></div>
     <div class="top-actions">
       <button class="btn sec" onclick="loadDash()">↻ Refresh</button>
       <a class="btn sec" href="/" target="_blank">View site ↗</a>
@@ -133,106 +131,121 @@
     </div>
   </div>
 
-  <!-- at a glance -->
-  <div class="status" id="status"></div>
-
-  <!-- stats -->
-  <div class="card">
-    <div class="card-h"><h2>📊 Stats</h2><span class="hint">Visitors = page opens · Previews = cards previewed · Paid = purchases</span></div>
-    <div class="tiles" id="stats"></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="overview" onclick="showTab('overview')">📈 Overview</button>
+    <button class="tab" data-tab="txns" onclick="showTab('txns')">💳 Transactions</button>
+    <button class="tab" data-tab="visitors" onclick="showTab('visitors')">👀 Visitors</button>
+    <button class="tab" data-tab="settings" onclick="showTab('settings')">⚙️ Settings</button>
   </div>
 
-  <!-- quick controls -->
-  <div class="card">
-    <div class="card-h"><h2>🎚️ Quick controls</h2><span class="hint">Your day-to-day switches</span></div>
-    <div class="cols">
-      <div class="sub">
-        <h3>🗓️ Active season</h3>
-        <p>What every visitor sees right now.</p>
-        <div class="row">
-          <select id="active-select" style="flex:1;min-width:150px"></select>
-          <button class="btn green" onclick="saveActive()">Set active</button>
-        </div>
-        <div id="active-current" class="hint" style="margin-top:8px"></div>
-      </div>
-      <div class="sub">
-        <h3>🎁 Free mode</h3>
-        <p>When ON, visitors get cards free (payment hidden). Turn OFF once Razorpay is live.</p>
-        <div class="row" style="justify-content:space-between">
-          <label class="switch"><input type="checkbox" id="free-toggle"> Free for everyone</label>
-          <button class="btn green" onclick="saveFree()">Save</button>
-        </div>
-        <div id="free-current" class="hint" style="margin-top:8px"></div>
-      </div>
+  <!-- OVERVIEW -->
+  <div class="view active" id="view-overview">
+    <div class="status" id="status"></div>
+    <div class="card"><div class="card-h"><h2>Key numbers</h2></div><div class="tiles" id="tiles-overview"></div></div>
+    <div class="card">
+      <div class="card-h"><h2>📈 Daily activity</h2><span class="hint">last 14 days</span></div>
+      <div class="chart-box"><canvas id="chart-activity"></canvas></div>
     </div>
   </div>
 
-  <!-- devices -->
-  <div class="card">
-    <div class="card-h"><h2>📱 Devices &amp; free usage</h2><span class="hint">Each device gets up to <b id="fl">10</b> free cards</span></div>
-    <div id="devices-box"></div>
+  <!-- TRANSACTIONS -->
+  <div class="view" id="view-txns">
+    <div class="card"><div class="card-h"><h2>Sales &amp; revenue</h2></div><div class="tiles" id="tiles-txns"></div></div>
+    <div class="card">
+      <div class="card-h"><h2>💰 Revenue per day</h2><span class="hint">last 14 days (₹)</span></div>
+      <div class="chart-box"><canvas id="chart-rev"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>🧾 Recent transactions</h2><span class="hint" id="txn-count"></span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Type</th><th>Season</th><th>For</th><th style="text-align:right">Amount</th></tr></thead><tbody id="txn-rows"></tbody></table></div>
+    </div>
   </div>
 
-  <!-- season editor -->
-  <div class="card">
-    <div class="card-h"><h2>✏️ Edit a season</h2><select id="edit-select" style="max-width:220px" onchange="loadSeasonForm(this.value)"></select></div>
-
-    <h3 style="margin:2px 0 12px;font-size:.95rem;color:var(--muted)">BRANDING</h3>
-    <div class="grid2">
-      <div class="field"><label>Season name</label><input data-path="label"></div>
-      <div class="field"><label>Emoji</label><input data-path="emoji"></div>
-      <div class="field"><label>Shop name (brand)</label><input data-path="brand"></div>
-      <div class="field"><label>Tagline</label><input data-path="tagline"></div>
-      <div class="field"><label>Character name (signature)</label><input data-path="senderName"></div>
-      <div class="field"><label>Letter header (office)</label><input data-path="senderTitle"></div>
-      <div class="field"><label>Place (dateline)</label><input data-path="dateline"></div>
-      <div class="field"><label>Badge text</label><input data-path="badge"></div>
+  <!-- VISITORS -->
+  <div class="view" id="view-visitors">
+    <div class="card"><div class="card-h"><h2>Audience</h2></div><div class="tiles" id="tiles-visitors"></div></div>
+    <div class="card">
+      <div class="card-h"><h2>👀 Visitors per day</h2><span class="hint">last 14 days</span></div>
+      <div class="chart-box"><canvas id="chart-visitors"></canvas></div>
     </div>
-    <div class="field"><label>Hero headline (use &lt;em&gt;…&lt;/em&gt; for the coloured word)</label><input data-path="heroTitle"></div>
-    <div class="field"><label>Hero subtext</label><textarea data-path="heroSub"></textarea></div>
-    <div class="field" style="max-width:200px"><label>Price (₹)</label><input id="f-price" type="number" min="1" step="1"></div>
+    <div class="card">
+      <div class="card-h"><h2>📱 Devices &amp; free usage</h2><span class="hint">up to <b id="fl">10</b> free cards each</span></div>
+      <div id="devices-box"></div>
+    </div>
+  </div>
 
-    <details>
-      <summary>🎨 Colours &amp; scene</summary>
-      <h3 style="margin:8px 0 8px;font-size:.9rem;color:var(--muted)">SITE COLOURS</h3>
-      <div class="grid3">
-        <div class="field"><label>Background</label><input type="color" data-path="colors.bg"></div>
-        <div class="field"><label>Cards</label><input type="color" data-path="colors.paper"></div>
-        <div class="field"><label>Text</label><input type="color" data-path="colors.ink"></div>
-        <div class="field"><label>Muted text</label><input type="color" data-path="colors.muted"></div>
-        <div class="field"><label>Lines/borders</label><input type="color" data-path="colors.line"></div>
-        <div class="field"><label>Primary (buttons)</label><input type="color" data-path="colors.primary"></div>
-        <div class="field"><label>Secondary</label><input type="color" data-path="colors.secondary"></div>
-        <div class="field"><label>Accent</label><input type="color" data-path="colors.accent"></div>
-        <div class="field"><label>Deep (builder bg)</label><input type="color" data-path="colors.deep"></div>
-      </div>
-      <h3 style="margin:10px 0 8px;font-size:.9rem;color:var(--muted)">CINEMATIC SCENE</h3>
-      <div class="grid3">
-        <div class="field"><label>Scene colour 1</label><input type="color" data-path="cine.c1"></div>
-        <div class="field"><label>Scene colour 2</label><input type="color" data-path="cine.c2"></div>
-        <div class="field"><label>Scene accent</label><input type="color" data-path="cine.accent"></div>
-        <div class="field"><label>Particles</label>
-          <select data-path="cine.particle"><option>snow</option><option>bats</option><option>confetti</option><option>stars</option><option>embers</option></select>
+  <!-- SETTINGS -->
+  <div class="view" id="view-settings">
+    <div class="card">
+      <div class="card-h"><h2>🎚️ Quick controls</h2></div>
+      <div class="cols">
+        <div class="sub">
+          <h3>🗓️ Active season</h3><p>What every visitor sees right now.</p>
+          <div class="row"><select id="active-select" style="flex:1;min-width:150px"></select><button class="btn green" onclick="saveActive()">Set active</button></div>
+          <div id="active-current" class="hint" style="margin-top:8px"></div>
+        </div>
+        <div class="sub">
+          <h3>🎁 Free mode</h3><p>When ON, visitors get cards free (payment hidden). Turn OFF once Razorpay is live.</p>
+          <div class="row" style="justify-content:space-between"><label class="switch"><input type="checkbox" id="free-toggle"> Free for everyone</label><button class="btn green" onclick="saveFree()">Save</button></div>
+          <div id="free-current" class="hint" style="margin-top:8px"></div>
         </div>
       </div>
-    </details>
+    </div>
 
-    <details>
-      <summary>📝 Letter wording</summary>
-      <p class="hint" style="margin:6px 0 10px">Tokens: <b>{name}</b>, <b>{age}</b>, <b>{city}</b>, <b>{deed}</b>. In the closing you may also use <b>{cityLine}</b>.</p>
-      <div class="field"><label>Greeting</label><input data-path="letter.greeting"></div>
-      <div class="field"><label>Opening</label><textarea data-path="letter.intro"></textarea></div>
-      <div class="field"><label>When a good deed is given</label><textarea data-path="letter.deed"></textarea></div>
-      <div class="field"><label>When NO deed is given</label><textarea data-path="letter.noDeed"></textarea></div>
-      <div class="field"><label>Age line (used only if age given)</label><textarea data-path="letter.age"></textarea></div>
-      <div class="field"><label>City line (used only if city given)</label><input data-path="letter.cityLine"></div>
-      <div class="field"><label>Closing</label><textarea data-path="letter.closing"></textarea></div>
-      <div class="field"><label>Sign-off</label><input data-path="letter.signoff"></div>
-    </details>
+    <div class="card">
+      <div class="card-h"><h2>✏️ Edit a season</h2><select id="edit-select" style="max-width:220px" onchange="loadSeasonForm(this.value)"></select></div>
+      <h3 style="margin:2px 0 12px;font-size:.9rem;color:var(--muted)">BRANDING</h3>
+      <div class="grid2">
+        <div class="field"><label>Season name</label><input data-path="label"></div>
+        <div class="field"><label>Emoji</label><input data-path="emoji"></div>
+        <div class="field"><label>Shop name (brand)</label><input data-path="brand"></div>
+        <div class="field"><label>Tagline</label><input data-path="tagline"></div>
+        <div class="field"><label>Character name (signature)</label><input data-path="senderName"></div>
+        <div class="field"><label>Letter header (office)</label><input data-path="senderTitle"></div>
+        <div class="field"><label>Place (dateline)</label><input data-path="dateline"></div>
+        <div class="field"><label>Badge text</label><input data-path="badge"></div>
+      </div>
+      <div class="field"><label>Hero headline (use &lt;em&gt;…&lt;/em&gt; for the coloured word)</label><input data-path="heroTitle"></div>
+      <div class="field"><label>Hero subtext</label><textarea data-path="heroSub"></textarea></div>
+      <div class="field" style="max-width:200px"><label>Price (₹)</label><input id="f-price" type="number" min="1" step="1"></div>
 
-    <div class="save-row">
-      <button class="btn green" onclick="saveSeason()">💾 Save this season</button>
-      <span class="hint">Saves instantly — reload the site to see changes.</span>
+      <details>
+        <summary>🎨 Colours &amp; scene</summary>
+        <h3 style="margin:8px 0 8px;font-size:.88rem;color:var(--muted)">SITE COLOURS</h3>
+        <div class="grid3">
+          <div class="field"><label>Background</label><input type="color" data-path="colors.bg"></div>
+          <div class="field"><label>Cards</label><input type="color" data-path="colors.paper"></div>
+          <div class="field"><label>Text</label><input type="color" data-path="colors.ink"></div>
+          <div class="field"><label>Muted text</label><input type="color" data-path="colors.muted"></div>
+          <div class="field"><label>Lines/borders</label><input type="color" data-path="colors.line"></div>
+          <div class="field"><label>Primary (buttons)</label><input type="color" data-path="colors.primary"></div>
+          <div class="field"><label>Secondary</label><input type="color" data-path="colors.secondary"></div>
+          <div class="field"><label>Accent</label><input type="color" data-path="colors.accent"></div>
+          <div class="field"><label>Deep (builder bg)</label><input type="color" data-path="colors.deep"></div>
+        </div>
+        <h3 style="margin:10px 0 8px;font-size:.88rem;color:var(--muted)">CINEMATIC SCENE</h3>
+        <div class="grid3">
+          <div class="field"><label>Scene colour 1</label><input type="color" data-path="cine.c1"></div>
+          <div class="field"><label>Scene colour 2</label><input type="color" data-path="cine.c2"></div>
+          <div class="field"><label>Scene accent</label><input type="color" data-path="cine.accent"></div>
+          <div class="field"><label>Particles</label><select data-path="cine.particle"><option>snow</option><option>bats</option><option>confetti</option><option>stars</option><option>embers</option></select></div>
+        </div>
+      </details>
+
+      <details>
+        <summary>📝 Letter wording</summary>
+        <p class="hint" style="margin:6px 0 10px">Tokens: <b>{name}</b>, <b>{age}</b>, <b>{city}</b>, <b>{deed}</b>. In the closing you may also use <b>{cityLine}</b>.</p>
+        <div class="field"><label>Greeting</label><input data-path="letter.greeting"></div>
+        <div class="field"><label>Opening</label><textarea data-path="letter.intro"></textarea></div>
+        <div class="field"><label>When a good deed is given</label><textarea data-path="letter.deed"></textarea></div>
+        <div class="field"><label>When NO deed is given</label><textarea data-path="letter.noDeed"></textarea></div>
+        <div class="field"><label>Age line (used only if age given)</label><textarea data-path="letter.age"></textarea></div>
+        <div class="field"><label>City line (used only if city given)</label><input data-path="letter.cityLine"></div>
+        <div class="field"><label>Closing</label><textarea data-path="letter.closing"></textarea></div>
+        <div class="field"><label>Sign-off</label><input data-path="letter.signoff"></div>
+      </details>
+
+      <div class="save-row"><button class="btn green" onclick="saveSeason()">💾 Save this season</button><span class="hint">Saves instantly — reload the site to see changes.</span></div>
     </div>
   </div>
 </div>
@@ -240,7 +253,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  var PW='', DATA=null, editingKey=null;
+  var PW='', DATA=null, editingKey=null, TAB='overview', charts={};
 
   try { var saved=sessionStorage.getItem('npp_admin_pw'); if(saved){ PW=saved; } } catch(e){}
   if(PW) loadDash();
@@ -262,22 +275,26 @@
         DATA=d;
         document.getElementById('login').style.display='none';
         document.getElementById('dash').hidden=false;
-        renderStatus(d);
-        renderStats(d.stats);
-        renderDevices(d.devices || {});
+        renderStatus(d); renderAllTiles(d.stats); renderTxns(d.txns||[]); renderDevices(d.devices||{});
         var flEl=document.getElementById('fl'); if(flEl) flEl.textContent=(d.freeLimit||10);
-        populateSelects();
-        loadFree();
-        loadSeasonForm(d.config.active);
+        populateSelects(); loadFree(); loadSeasonForm(d.config.active);
+        showTab(TAB);
       })
       .catch(function(){ PW=''; try{ sessionStorage.removeItem('npp_admin_pw'); }catch(e){} document.getElementById('login').style.display='block'; document.getElementById('dash').hidden=true; });
   }
 
   function money(paise){ var r=(paise||0)/100; return '₹'+((r%1===0)?r.toFixed(0):r.toFixed(2)); }
 
+  function showTab(name){
+    TAB=name;
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){ t.classList.toggle('active', t.getAttribute('data-tab')===name); });
+    Array.prototype.forEach.call(document.querySelectorAll('.view'), function(v){ v.classList.remove('active'); });
+    var el=document.getElementById('view-'+name); if(el) el.classList.add('active');
+    if(DATA) renderCharts(name);
+  }
+
   function renderStatus(d){
-    var cfg=d.config, s=(cfg.seasons&&cfg.seasons[cfg.active])||{};
-    var up=(d.storage||'').indexOf('Upstash')>-1;
+    var cfg=d.config, s=(cfg.seasons&&cfg.seasons[cfg.active])||{}, up=(d.storage||'').indexOf('Upstash')>-1;
     var pills=[
       { l:'Active season', v:(s.emoji||'')+' '+(s.label||cfg.active), t:'' },
       { l:'Mode', v: cfg.free ? '🎁 Free (promo)' : '💳 Paid', t: cfg.free?'amber':'green' },
@@ -285,38 +302,71 @@
       { l:'Price', v: money(s.pricePaise), t:'blue' },
       { l:'Storage', v: up?'✅ Upstash':'⚠️ Local file', t: up?'green':'red' }
     ];
-    document.getElementById('status').innerHTML = pills.map(function(p){
-      return '<div class="pill '+p.t+'"><div class="l">'+p.l+'</div><div class="v">'+p.v+'</div></div>';
-    }).join('');
+    document.getElementById('status').innerHTML=pills.map(function(p){ return '<div class="pill '+p.t+'"><div class="l">'+p.l+'</div><div class="v">'+p.v+'</div></div>'; }).join('');
   }
 
-  function renderStats(s){
+  function tileHTML(k,v,ic,c){ return '<div class="tile"><div class="tile-top"><span class="tile-ic" style="background:'+c+'22;color:'+c+'">'+ic+'</span><span class="tile-k">'+k+'</span></div><div class="tile-v">'+v+'</div></div>'; }
+  function renderAllTiles(s){
     var conv = s.visits ? ((s.purchases/s.visits)*100).toFixed(1)+'%' : '—';
-    var tiles=[
-      {k:'Visitors', v:s.visits||0, ic:'👀', c:'#5f9bff'},
-      {k:'Previews', v:s.previews||0, ic:'🎬', c:'#7c8cff'},
-      {k:'Paid sales', v:s.purchases||0, ic:'💳', c:'#46c08a'},
-      {k:'Free sends', v:s.freebies||0, ic:'🎁', c:'#e3b64d'},
-      {k:'Conversion', v:conv, ic:'📈', c:'#b48cff'},
-      {k:'Revenue', v:money(s.revenue), ic:'💰', c:'#46c08a'}
-    ];
-    document.getElementById('stats').innerHTML = tiles.map(function(t){
-      return '<div class="tile"><div class="tile-top"><span class="tile-ic" style="background:'+t.c+'22;color:'+t.c+'">'+t.ic+'</span><span class="tile-k">'+t.k+'</span></div><div class="tile-v">'+t.v+'</div></div>';
+    document.getElementById('tiles-overview').innerHTML =
+      tileHTML('Visitors',s.visits||0,'👀','#5f9bff')+tileHTML('Previews',s.previews||0,'🎬','#d95926')+
+      tileHTML('Paid sales',s.purchases||0,'💳','#46c08a')+tileHTML('Free sends',s.freebies||0,'🎁','#e3b64d')+
+      tileHTML('Conversion',conv,'📈','#b48cff')+tileHTML('Revenue',money(s.revenue),'💰','#46c08a');
+    document.getElementById('tiles-txns').innerHTML =
+      tileHTML('Paid sales',s.purchases||0,'💳','#46c08a')+tileHTML('Free sends',s.freebies||0,'🎁','#e3b64d')+tileHTML('Revenue',money(s.revenue),'💰','#c98500');
+    document.getElementById('tiles-visitors').innerHTML =
+      tileHTML('Visitors',s.visits||0,'👀','#5f9bff')+tileHTML('Previews',s.previews||0,'🎬','#d95926')+tileHTML('Conversion',conv,'📈','#b48cff');
+  }
+
+  function fmtTime(t){ try{ return new Date(t).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+  function renderTxns(txns){
+    document.getElementById('txn-count').textContent = txns.length ? (txns.length+' shown') : '';
+    var body=document.getElementById('txn-rows');
+    if(!txns.length){ body.innerHTML='<tr><td colspan="5" class="muted" style="padding:16px 0">No transactions yet.</td></tr>'; return; }
+    body.innerHTML = txns.map(function(x){
+      var badge = x.type==='paid' ? '<span class="badge paid">Paid</span>' : '<span class="badge free">Free</span>';
+      var amt = x.type==='paid' ? money(x.amount) : '—';
+      return '<tr><td class="mono">'+fmtTime(x.t)+'</td><td>'+badge+'</td><td>'+(x.season||'')+'</td><td>'+((x.name||'').replace(/</g,'&lt;')||'<span class="muted">—</span>')+'</td><td style="text-align:right;font-weight:800">'+amt+'</td></tr>';
     }).join('');
   }
 
   function renderDevices(devices){
     var box=document.getElementById('devices-box'); if(!box) return;
     var entries=Object.keys(devices||{}).map(function(k){ return [k,devices[k]]; }).sort(function(a,b){ return b[1]-a[1]; });
-    if(!entries.length){ box.innerHTML='<p class="muted">No device activity yet. Counts appear here as people make cards.</p>'; return; }
+    if(!entries.length){ box.innerHTML='<p class="muted">No device activity yet.</p>'; return; }
     var totalDevices=entries.length, totalUses=0; entries.forEach(function(e){ totalUses+=e[1]; });
     var lim=(DATA && DATA.freeLimit)||10;
-    var rows=entries.slice(0,100).map(function(e){ var full=e[1]>=lim;
-      return '<tr><td class="mono">'+e[0].slice(0,18)+'…</td><td style="text-align:right;font-weight:800;color:'+(full?'var(--red)':'var(--ink)')+'">'+e[1]+' / '+lim+(full?' · full':'')+'</td></tr>'; }).join('');
-    box.innerHTML='<div class="dev-head">'+totalDevices+' device(s) · '+totalUses+' free cards made</div>'+
-      '<div style="max-height:300px;overflow:auto"><table><thead><tr><th>Device</th><th style="text-align:right">Free uses</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    var rows=entries.slice(0,100).map(function(e){ var full=e[1]>=lim; return '<tr><td class="mono">'+e[0].slice(0,18)+'…</td><td style="text-align:right;font-weight:800;color:'+(full?'var(--red)':'var(--ink)')+'">'+e[1]+' / '+lim+(full?' · full':'')+'</td></tr>'; }).join('');
+    box.innerHTML='<p class="muted" style="margin-bottom:10px;font-weight:700">'+totalDevices+' device(s) · '+totalUses+' free cards made</p><div class="tbl-wrap"><table><thead><tr><th>Device</th><th style="text-align:right">Free uses</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
 
+  /* ---------- charts ---------- */
+  function daily(){ return (DATA && DATA.daily) || []; }
+  function labels(){ return daily().map(function(d){ return d.date.slice(5); }); }
+  function chartOpts(){
+    return { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#c3c2b7', usePointStyle:true, boxWidth:8, font:{ family:'Nunito', weight:'700' } } },
+        tooltip:{ backgroundColor:'#0f1829', borderColor:'#263048', borderWidth:1, titleColor:'#eaf0f8', bodyColor:'#c3c2b7', padding:10 } },
+      scales:{ x:{ grid:{ color:'rgba(255,255,255,.05)' }, ticks:{ color:'#8e9bb3', font:{ family:'Nunito' } } },
+        y:{ beginAtZero:true, grid:{ color:'rgba(255,255,255,.06)' }, ticks:{ color:'#8e9bb3', precision:0, font:{ family:'Nunito' } } } } };
+  }
+  function mk(id, cfg){ if(!window.Chart) return; var cv=document.getElementById(id); if(!cv) return; if(charts[id]) charts[id].destroy(); charts[id]=new Chart(cv.getContext('2d'), cfg); }
+  function renderCharts(tab){
+    var d=daily(), L=labels();
+    if(tab==='overview'){
+      mk('chart-activity',{ type:'line', data:{ labels:L, datasets:[
+        { label:'Visitors', data:d.map(function(x){return x.visits;}), borderColor:'#3987e5', backgroundColor:'rgba(57,135,229,.15)', borderWidth:2, tension:.3, pointRadius:2, fill:true },
+        { label:'Previews', data:d.map(function(x){return x.previews;}), borderColor:'#d95926', backgroundColor:'rgba(217,89,38,.12)', borderWidth:2, tension:.3, pointRadius:2, fill:true },
+        { label:'Cards sent', data:d.map(function(x){return x.purchases+x.freebies;}), borderColor:'#199e70', backgroundColor:'rgba(25,158,112,.12)', borderWidth:2, tension:.3, pointRadius:2, fill:true }
+      ]}, options:chartOpts() });
+    } else if(tab==='txns'){
+      mk('chart-rev',{ type:'bar', data:{ labels:L, datasets:[{ label:'Revenue (₹)', data:d.map(function(x){return x.revenue/100;}), backgroundColor:'#c98500', borderRadius:4 }]}, options:chartOpts() });
+    } else if(tab==='visitors'){
+      mk('chart-visitors',{ type:'bar', data:{ labels:L, datasets:[{ label:'Visitors', data:d.map(function(x){return x.visits;}), backgroundColor:'#3987e5', borderRadius:4 }]}, options:chartOpts() });
+    }
+  }
+
+  /* ---------- settings ---------- */
   function populateSelects(){
     var keys=Object.keys(DATA.config.seasons);
     function opts(sel){ return keys.map(function(k){ return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+((DATA.config.seasons[k].emoji||'')+' '+(DATA.config.seasons[k].label||k))+'</option>'; }).join(''); }
@@ -325,35 +375,26 @@
     var cur=(DATA.config.seasons[DATA.config.active]||{});
     document.getElementById('active-current').textContent='Live now: '+((cur.emoji||'')+' '+(cur.label||DATA.config.active));
   }
-
   function getPath(o,p){ return p.split('.').reduce(function(x,k){ return x&&x[k]; }, o); }
   function setPath(o,p,v){ var ks=p.split('.'),c=o; for(var i=0;i<ks.length-1;i++){ c[ks[i]]=c[ks[i]]||{}; c=c[ks[i]]; } c[ks[ks.length-1]]=v; }
-
   function loadSeasonForm(key){
     editingKey=key; var s=DATA.config.seasons[key]; if(!s) return;
     document.getElementById('edit-select').value=key;
     document.querySelectorAll('[data-path]').forEach(function(el){ var v=getPath(s, el.getAttribute('data-path')); el.value=(v==null?'':v); });
     document.getElementById('f-price').value=((s.pricePaise||0)/100);
   }
-
   function saveSeason(){
     var s=JSON.parse(JSON.stringify(DATA.config.seasons[editingKey]));
     document.querySelectorAll('[data-path]').forEach(function(el){ setPath(s, el.getAttribute('data-path'), el.value); });
-    s.pricePaise=Math.round(parseFloat(document.getElementById('f-price').value||'0')*100)||100;
-    s.key=editingKey;
-    DATA.config.seasons[editingKey]=s;
-    saveConfig('Season saved ✅');
+    s.pricePaise=Math.round(parseFloat(document.getElementById('f-price').value||'0')*100)||100; s.key=editingKey;
+    DATA.config.seasons[editingKey]=s; saveConfig('Season saved ✅');
   }
-  function saveActive(){
-    DATA.config.active=document.getElementById('active-select').value;
-    saveConfig('Active season set ✅');
-  }
+  function saveActive(){ DATA.config.active=document.getElementById('active-select').value; saveConfig('Active season set ✅'); }
   function saveConfig(msg){
     fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':PW},body:JSON.stringify({config:DATA.config})})
       .then(function(r){return r.json();}).then(function(d){ if(d.ok){ toast(msg); renderStatus(DATA); populateSelects(); loadSeasonForm(editingKey||DATA.config.active); } else { toast(d.error||'Save failed'); } })
       .catch(function(){ toast('Network error'); });
   }
-
   function loadFree(){ var t=document.getElementById('free-toggle'); if(t) t.checked=!!DATA.config.free; updateFreeLabel(); }
   function updateFreeLabel(){ var el=document.getElementById('free-current'); if(el) el.textContent = DATA.config.free ? 'Currently: FREE for everyone 🎁' : 'Currently: paid (₹ shown at checkout)'; }
   function saveFree(){ DATA.config.free=document.getElementById('free-toggle').checked; updateFreeLabel(); renderStatus(DATA); saveConfig(DATA.config.free?'Free mode ON ✅':'Free mode OFF ✅'); }

@@ -62,6 +62,45 @@ async function getStats() {
   return out;
 }
 
+// ---- daily stats (for graphs) + transaction log ----
+function istDate(ts) { const d = new Date((ts || Date.now()) + 5.5 * 3600 * 1000); return d.toISOString().slice(0, 10); }
+async function pipeline(cmds) {
+  const res = await fetch(URL + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(cmds) });
+  if (!res.ok) throw new Error('Upstash pipeline ' + res.status);
+  return res.json();
+}
+async function incrDaily(field, by) {
+  by = by || 1; const day = istDate();
+  if (useRedis) { await redis(['HINCRBY', 'npp:daily:' + day, field, by]); try { await redis(['EXPIRE', 'npp:daily:' + day, 60 * 60 * 24 * 45]); } catch (e) {} return; }
+  const d = readFile(); d.daily = d.daily || {}; d.daily[day] = d.daily[day] || {}; d.daily[day][field] = (d.daily[day][field] || 0) + by; writeFile(d);
+}
+async function getDaily(days) {
+  days = days || 14; const now = Date.now(); const dates = [];
+  for (let i = days - 1; i >= 0; i--) dates.push(istDate(now - i * 86400000));
+  const out = [];
+  if (useRedis) {
+    const res = await pipeline(dates.map(function (dt) { return ['HGETALL', 'npp:daily:' + dt]; }));
+    dates.forEach(function (dt, i) {
+      const arr = (res[i] && res[i].result) || []; const o = { date: dt, visits: 0, previews: 0, purchases: 0, revenue: 0, freebies: 0 };
+      if (Array.isArray(arr)) for (let k = 0; k < arr.length; k += 2) o[arr[k]] = parseInt(arr[k + 1] || '0', 10);
+      out.push(o);
+    });
+    return out;
+  }
+  const daily = readFile().daily || {};
+  dates.forEach(function (dt) { const x = daily[dt] || {}; out.push({ date: dt, visits: x.visits || 0, previews: x.previews || 0, purchases: x.purchases || 0, revenue: x.revenue || 0, freebies: x.freebies || 0 }); });
+  return out;
+}
+async function logTxn(rec) {
+  if (useRedis) { await redis(['LPUSH', 'npp:txns', JSON.stringify(rec)]); try { await redis(['LTRIM', 'npp:txns', 0, 199]); } catch (e) {} return; }
+  const d = readFile(); d.txns = d.txns || []; d.txns.unshift(rec); if (d.txns.length > 200) d.txns.length = 200; writeFile(d);
+}
+async function listTxns(n) {
+  n = n || 100;
+  if (useRedis) { const arr = await redis(['LRANGE', 'npp:txns', 0, n - 1]); return (arr || []).map(function (s) { try { return JSON.parse(s); } catch (e) { return null; } }).filter(Boolean); }
+  return (readFile().txns || []).slice(0, n);
+}
+
 // ---- short card links (code -> encoded payload) ----
 async function setCard(code, payload) {
   if (useRedis) { await redis(['SET', 'npp:card:' + code, payload, 'EX', 60 * 60 * 24 * 180]); return; } // 180-day expiry
@@ -86,4 +125,4 @@ async function listDevices() {
   return (readFile().devices) || {};
 }
 
-module.exports = { getConfig, saveConfig, incr, getStats, setCard, getCard, incrDevice, getDeviceCount, listDevices, useRedis };
+module.exports = { getConfig, saveConfig, incr, getStats, incrDaily, getDaily, logTxn, listTxns, setCard, getCard, incrDevice, getDeviceCount, listDevices, useRedis };
