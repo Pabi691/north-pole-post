@@ -80,9 +80,35 @@
   background:radial-gradient(circle at 50% 80%, #ffd36b, #ff7a1a 45%, rgba(255,80,0,0) 72%); filter:blur(2px); animation:flick 1.6s ease-in-out infinite;}
 @keyframes flick{0%,100%{transform:scaleY(1) translateY(0); opacity:.85;}50%{transform:scaleY(1.25) translateY(-8px); opacity:1;}}
 
+/* ============ HALLOWEEN SPOOKY FX (particle = bats) ============ */
+.fx-bg{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.fx-top{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;}
+.fx-fog{position:absolute;left:0;right:0;bottom:-40px;height:190px;}
+.fx-fog i{position:absolute;bottom:0;width:72%;height:180px;border-radius:50%;filter:blur(34px);opacity:.4;background:radial-gradient(ellipse at center, rgba(130,70,170,.55), transparent 70%);animation:fxdrift 24s ease-in-out infinite;}
+.fx-fog i:nth-child(2){left:28%;animation-duration:32s;animation-delay:-9s;background:radial-gradient(ellipse at center, rgba(255,120,40,.3), transparent 70%);}
+@keyframes fxdrift{0%,100%{transform:translateX(-9%);}50%{transform:translateX(13%);}}
+.fx-eyes{position:absolute;width:52px;height:15px;opacity:0;animation:fxblink 6.5s ease-in-out infinite;}
+.fx-eyes::before,.fx-eyes::after{content:"";position:absolute;top:0;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 50% 45%, #ffe14d, #ff6a00 58%, transparent 72%);box-shadow:0 0 14px 4px rgba(255,140,0,.6);}
+.fx-eyes::before{left:0;} .fx-eyes::after{right:0;}
+@keyframes fxblink{0%,40%,100%{opacity:0;}46%,56%{opacity:.95;}50%,52%{opacity:.25;}}
+.fx-ghost{position:absolute;left:-60px;top:38%;font-size:44px;opacity:0;filter:drop-shadow(0 0 18px rgba(200,185,255,.55));animation:fxghost 17s ease-in-out infinite;}
+@keyframes fxghost{0%{left:-60px;opacity:0;transform:translateY(0);}12%{opacity:.5;}50%{transform:translateY(-28px);}88%{opacity:.5;}100%{left:112%;opacity:0;transform:translateY(0);}}
+.fx-flash{position:absolute;inset:0;background:#fff;opacity:0;mix-blend-mode:screen;animation:fxlight 10s linear infinite;}
+@keyframes fxlight{0%,95%,100%{opacity:0;}96%{opacity:.45;}96.6%{opacity:0;}97.4%{opacity:.65;}98.2%{opacity:0;}}
+.fx-vignette{position:absolute;inset:0;box-shadow:inset 0 0 150px 40px rgba(70,0,0,.5);animation:fxbreathe 4.8s ease-in-out infinite;}
+@keyframes fxbreathe{0%,100%{box-shadow:inset 0 0 150px 40px rgba(70,0,0,.42);}50%{box-shadow:inset 0 0 210px 75px rgba(110,0,0,.62);}}
+.fx-scare{position:absolute;inset:0;z-index:7;display:grid;place-items:center;pointer-events:none;opacity:0;}
+.fx-scare span{font-size:16px;line-height:1;filter:drop-shadow(0 0 34px rgba(255,20,20,.85));}
+.fx-scare.go{animation:fxscareBg .9s ease-out forwards;}
+.fx-scare.go span{animation:fxscareZoom .9s cubic-bezier(.2,.9,.3,1) forwards;}
+@keyframes fxscareBg{0%{opacity:0;background:rgba(0,0,0,0);}7%{opacity:1;background:rgba(45,0,0,.65);}72%{opacity:1;}100%{opacity:0;background:rgba(0,0,0,0);}}
+@keyframes fxscareZoom{0%{font-size:18px;transform:rotate(-5deg);}55%{font-size:min(58vw,380px);}100%{font-size:min(58vw,380px);transform:rotate(4deg);}}
+
 @media (prefers-reduced-motion:reduce){
   .cine::before{transition:none; opacity:0;}
   .cine .card,.cine .lbody p{opacity:1!important; transform:none!important; filter:none!important; animation:none!important;}
   .cine[data-tpl="envelope"] .env-flap{transform:rotateX(175deg);}
   .cine[data-tpl="fire"] .fire i{animation:none;}
+  .fx-fog i,.fx-eyes,.fx-ghost,.fx-flash,.fx-vignette,.fx-scare,.fx-scare span{animation:none!important;}
+  .fx-scare{display:none;}
 }

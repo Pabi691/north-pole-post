@@ -96,7 +96,7 @@
     document.getElementById('ov-open').addEventListener('click', function(){
       document.getElementById('overlay').classList.add('hide');
       document.getElementById('page').style.display='block';
-      Cinematic.render(document.getElementById('cine-mount'), L, cineTpl, { watermark:false, theme:theme });
+      Cinematic.render(document.getElementById('cine-mount'), L, cineTpl, { watermark:false, theme:theme, scare:true });
       Cinematic.cardImage(L, lookFor()).then(function(b){ letterCardBlob=b; }).catch(function(){});
       document.getElementById('music').style.display='grid';
       Cinematic.music.setSeason(seasonKey);

@@ -91,9 +91,21 @@
     if (tpl.id === 'envelope') extra = '<div class="env-flap"></div><div class="env-pocket"></div>';
     if (tpl.id === 'fire') extra = '<div class="fire"><i style="left:8%"></i><i style="left:28%;animation-delay:.3s"></i><i style="left:48%;animation-delay:.6s"></i><i style="left:68%;animation-delay:.2s"></i><i style="left:88%;animation-delay:.5s"></i></div>';
 
+    var spooky = (theme.particle === 'bats');   // Halloween
+    var fxHtml = '';
+    if (spooky) {
+      fxHtml =
+        '<div class="fx-bg"><div class="fx-fog"><i></i><i></i></div>' +
+          '<div class="fx-eyes" style="top:15%;left:9%"></div>' +
+          '<div class="fx-eyes" style="top:27%;right:11%;animation-delay:2.4s"></div>' +
+          '<div class="fx-ghost">👻</div></div>' +
+        '<div class="fx-top"><div class="fx-flash"></div><div class="fx-vignette"></div></div>' +
+        (opts.scare ? '<div class="fx-scare" id="fx-scare"><span>💀</span></div>' : '');
+    }
+
     mount.innerHTML =
       '<div class="cine" data-tpl="' + tpl.id + '">' +
-        '<canvas class="cine-particles"></canvas>' +
+        '<canvas class="cine-particles"></canvas>' + fxHtml +
         '<div class="cine-stage"><div class="cine-frame">' + extra + '<div class="card">' + cardHTML(L) + '</div></div></div>' +
         (opts.watermark ? '<div class="cine-watermark">Preview · tap Send to unlock</div>' : '') +
       '</div>';
@@ -103,6 +115,7 @@
     cine.style.setProperty('--cine-bg', 'radial-gradient(120% 95% at 50% 0%, ' + (theme.c1 || DEFAULT_THEME.c1) + ', ' + (theme.c2 || DEFAULT_THEME.c2) + ' 72%)');
     startParticles(cine.querySelector('.cine-particles'), theme.particle || 'snow');
     requestAnimationFrame(function () { requestAnimationFrame(function () { cine.classList.add('play'); }); });
+    if (spooky && opts.scare) { setTimeout(function () { var sc = cine.querySelector('#fx-scare'); if (sc) sc.classList.add('go'); }, 1700); }
     return tpl;
   }
 
