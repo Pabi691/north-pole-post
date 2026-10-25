@@ -17,7 +17,7 @@ const { buildLetter, activeSeason, friendsCard } = require('./seasons');
 const { letterEmailHtml, encodeShare } = require('./letter');
 
 const app = express();
-app.use(express.json({ limit: '256kb' }));
+app.use(express.json({ limit: '4mb' }));  // room for the card image (base64) sent for the email
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: function (res, p) { if (p.endsWith('.html')) res.setHeader('Cache-Control', 'no-store'); }
 }));
@@ -96,7 +96,7 @@ app.post('/api/verify', async function (req, res) {
 
     let emailed = false;
     if (details.email) {
-      try { await sendLetterEmail(details.email, season, letter, shareUrl); emailed = true; }
+      try { await sendLetterEmail(details.email, season, letter, shareUrl, (req.body && req.body.image) || null); emailed = true; }
       catch (mailErr) { console.error('email failed:', mailErr && mailErr.message ? mailErr.message : mailErr); }
     }
 
@@ -132,7 +132,7 @@ app.post('/api/free-unlock', async function (req, res) {
     const shareUrl = host ? (proto + '://' + host + p) : '';
     let emailed = false;
     if (details.email) {
-      try { await sendLetterEmail(details.email, season, letter, shareUrl); emailed = true; }
+      try { await sendLetterEmail(details.email, season, letter, shareUrl, (req.body && req.body.image) || null); emailed = true; }
       catch (e) { console.error('email failed:', e && e.message ? e.message : e); }
     }
     let used = 0;
@@ -219,15 +219,18 @@ function getTransporter() {
   });
   return transporter;
 }
-async function sendLetterEmail(to, season, letter, shareUrl) {
+async function sendLetterEmail(to, season, letter, shareUrl, imageB64) {
   const t = getTransporter();
   if (!t) throw new Error('SMTP not configured');
-  await t.sendMail({
-    from: process.env.MAIL_FROM || ('North Pole Post <' + process.env.SMTP_USER + '>'),
+  const hasImage = Boolean(imageB64);
+  const mail = {
+    from: process.env.MAIL_FROM || ('Letter Shop <' + process.env.SMTP_USER + '>'),
     to: to,
-    subject: (letter.emoji || '🎅') + ' A letter for ' + (letter.name || 'your child'),
-    html: letterEmailHtml(season, letter, shareUrl)
-  });
+    subject: (letter.emoji || '🎃') + ' A card for ' + (letter.name || 'you'),
+    html: letterEmailHtml(season, letter, shareUrl, hasImage)
+  };
+  if (hasImage) { try { mail.attachments = [{ filename: 'card.jpg', content: Buffer.from(imageB64, 'base64'), cid: 'cardimg' }]; } catch (e) {} }
+  await t.sendMail(mail);
 }
 
 app.listen(PORT, function () {

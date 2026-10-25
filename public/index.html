@@ -372,9 +372,9 @@
     var pb=document.querySelector('.price-badge'); if(pb) pb.textContent='100% free right now 🎁';
     var nr=document.getElementById('not-ready'); if(nr) nr.style.display='none';
     var pl=document.querySelector('.pay-logos'); if(pl) pl.style.display='none';
-    var ef=document.getElementById('f-email'); if(ef){ var fld=ef.closest('.field'); if(fld) fld.style.display='none'; }  // no email step in free mode
+    var lbl=document.querySelector('label[for="f-email"]'); if(lbl) lbl.innerHTML='📧 Email a copy <span>(optional)</span>';
     var h=document.querySelector('#send-box h3'); if(h) h.textContent='Your card is ready 🎁';
-    var p=document.querySelector('#send-box p'); if(p) p.textContent="It's completely free right now — tap below to share the card image.";
+    var p=document.querySelector('#send-box p'); if(p) p.textContent="Tap Share for WhatsApp — or add an email below to also get a spooky copy in the inbox.";
     resetPay();
   }
 
@@ -413,6 +413,7 @@
   function currentLook(){ var s=SEASON||{}, cine=s.cine||{}; return { c1:cine.c1, c2:cine.c2, accent:cine.accent, primary:(s.colors&&s.colors.primary)||'#b23b32', decor:(DECOR&&DECOR[s.key])||[] }; }
   function regenCardImage(){ if(!letterObj || !window.html2canvas || !window.Cinematic || !Cinematic.cardImage) return; cardBlob=null; var tok=++cardToken; Cinematic.cardImage(letterObj, currentLook()).then(function(b){ if(tok===cardToken) cardBlob=b; }).catch(function(){}); }
   function downloadBlob(blob,name){ var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download=name||'card.jpg'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){ URL.revokeObjectURL(url); },4000); }
+  function blobToB64(blob){ return new Promise(function(res){ try{ var fr=new FileReader(); fr.onload=function(){ var s=String(fr.result||''); var i=s.indexOf(','); res(i>=0?s.slice(i+1):''); }; fr.onerror=function(){ res(''); }; fr.readAsDataURL(blob); }catch(e){ res(''); } }); }
 
   function shareCardImage(){
     if(!letterObj){ toast('Make the card first.'); return; }
@@ -435,17 +436,23 @@
   function freeShare(){
     if(!letterObj){ toast('Make the card first.'); return; }
     if(getLocalUses() >= FREE_LIMIT){ showLimitReached(); return; }
+    var email=document.getElementById('f-email').value.trim();
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('e-email').hidden=false; return; }
+    document.getElementById('e-email').hidden=true; state.email=email;
     state.device = deviceId();
     shareCardImage();   // share the card IMAGE in this tap (native share sheet → WhatsApp)
     var nowUsed = getLocalUses()+1; setLocalUses(nowUsed);
     unlock({ shareUrl: '', emailed: false });  // link is filled in (SHORT) once the server responds — no long link ever shown
     var _wa=document.getElementById('sh-wa'); if(_wa){ _wa.textContent='🔗 Preparing link…'; _wa.removeAttribute('href'); }
     var left = Math.max(0, FREE_LIMIT - nowUsed);
-    document.getElementById('email-note').textContent = '🎁 Done! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.';
-    fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})})
-      .then(function(r){ return r.json(); })
-      .then(function(data){ if(data && data.shareUrl){ setShortLink(data.shareUrl); } else { shortenFallback(); } })
-      .catch(function(){ shortenFallback(); });
+    document.getElementById('email-note').textContent = '🎁 Done! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.' + (email ? ' Emailing a copy…' : '');
+    var fire = function(imgB64){
+      fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state, image:imgB64||null})})
+        .then(function(r){ return r.json(); })
+        .then(function(data){ if(data && data.shareUrl){ setShortLink(data.shareUrl); } else { shortenFallback(); } if(email){ var en=document.getElementById('email-note'); if(en) en.textContent = (data&&data.emailed) ? ('🎁 Done! A spooky copy was emailed to '+email+'.') : '🎁 Done! (Could not email — check the address.)'; } })
+        .catch(function(){ shortenFallback(); });
+    };
+    if(email && cardBlob){ blobToB64(cardBlob).then(fire); } else { fire(null); }
   }
 
   function payAndSend(){
@@ -469,11 +476,14 @@
 
   function verify(resp){
     var b=document.getElementById('pay-btn'); b.disabled=true; b.textContent='Confirming…';
-    fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ razorpay_order_id:resp.razorpay_order_id, razorpay_payment_id:resp.razorpay_payment_id, razorpay_signature:resp.razorpay_signature, details:state })})
-      .then(function(r){ return r.json(); })
-      .then(function(data){ if(data.ok){ unlock(data); } else { toast(data.error||'Could not verify payment.'); resetPay(); } })
-      .catch(function(){ toast('Network error after payment.'); resetPay(); });
+    var done=function(imgB64){
+      fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ razorpay_order_id:resp.razorpay_order_id, razorpay_payment_id:resp.razorpay_payment_id, razorpay_signature:resp.razorpay_signature, details:state, image:imgB64||null })})
+        .then(function(r){ return r.json(); })
+        .then(function(data){ if(data.ok){ unlock(data); } else { toast(data.error||'Could not verify payment.'); resetPay(); } })
+        .catch(function(){ toast('Network error after payment.'); resetPay(); });
+    };
+    if(cardBlob){ blobToB64(cardBlob).then(done); } else { done(null); }
   }
 
   function unlock(data){
