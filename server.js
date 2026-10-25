@@ -90,18 +90,20 @@ app.post('/api/verify', async function (req, res) {
     const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const host = req.headers.host;
     const hash = encodeShare(letter, season.key, cineTpl);
-    let p = '/letter.html#' + hash;  // fallback (long) link if storage is unavailable
-    try { const code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
+    let p = '/letter.html#' + hash, code = null;  // fallback (long) link if storage is unavailable
+    try { code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
     const shareUrl = host ? (proto + '://' + host + p) : '';
 
     // Reply immediately — do NOT wait on email/stats (that was the slow part).
     res.json({ ok: true, letter: letter, emailed: Boolean(details.email), shareUrl: shareUrl });
 
-    // Record the sale + send the email in the background.
+    // Store image + record the sale + send the email, all in the background.
     const image = (req.body && req.body.image) || null;
     setImmediate(async function () {
+      let imageUrl = '';
+      if (image && code && host) { try { await store.setCardImage(code, image); imageUrl = proto + '://' + host + '/ci/' + code; } catch (e) {} }
       try { await bump('purchases'); await bump('revenue', parseInt(season.pricePaise, 10) || 0); await store.logTxn({ t: Date.now(), type: 'paid', season: season.key, amount: parseInt(season.pricePaise, 10) || 0, name: String(details.name || '').slice(0, 40), device: String(details.device || '').slice(0, 20) }); } catch (e) {}
-      if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, image); } catch (mailErr) { console.error('email failed:', mailErr && mailErr.message ? mailErr.message : mailErr); } }
+      if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, imageUrl); } catch (mailErr) { console.error('email failed:', mailErr && mailErr.message ? mailErr.message : mailErr); } }
     });
   } catch (e) {
     console.error('verify failed:', e && e.message ? e.message : e);
@@ -126,8 +128,8 @@ app.post('/api/free-unlock', async function (req, res) {
     const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const host = req.headers.host;
     const hash = encodeShare(letter, season.key, cineTpl);
-    let p = '/letter.html#' + hash;  // fallback (long) link if storage is unavailable
-    try { const code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
+    let p = '/letter.html#' + hash, code = null;  // fallback (long) link if storage is unavailable
+    try { code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
     const shareUrl = host ? (proto + '://' + host + p) : '';
     let used = 0;
     if (device) { try { used = await store.incrDevice(device); } catch (e) {} }
@@ -137,8 +139,10 @@ app.post('/api/free-unlock', async function (req, res) {
 
     const image = (req.body && req.body.image) || null;
     setImmediate(async function () {
+      let imageUrl = '';
+      if (image && code && host) { try { await store.setCardImage(code, image); imageUrl = proto + '://' + host + '/ci/' + code; } catch (e) {} }
       try { await bump('freebies'); await store.logTxn({ t: Date.now(), type: 'free', season: season.key, amount: 0, name: String(details.name || '').slice(0, 40), device: device }); } catch (e) {}
-      if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, image); } catch (e) { console.error('email failed:', e && e.message ? e.message : e); } }
+      if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, imageUrl); } catch (e) { console.error('email failed:', e && e.message ? e.message : e); } }
     });
   } catch (e) {
     console.error('free-unlock failed:', e && e.message ? e.message : e);
@@ -156,6 +160,15 @@ app.get('/api/card/:code', async function (req, res) {
 });
 app.get('/c/:code', function (req, res) {
   res.sendFile(path.join(__dirname, 'public', 'letter.html'));
+});
+app.get('/ci/:code', async function (req, res) {
+  try {
+    const b64 = await store.getCardImage(String(req.params.code || '').slice(0, 16));
+    if (!b64) return res.status(404).end();
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=2592000');
+    res.end(Buffer.from(b64, 'base64'));
+  } catch (e) { res.status(500).end(); }
 });
 app.post('/api/shorten', async function (req, res) {
   try {
@@ -232,24 +245,33 @@ function getTransporter() {
   });
   return transporter;
 }
-async function sendLetterEmail(to, season, letter, shareUrl, imageB64) {
+function mailFrom() {
+  const f = process.env.MAIL_FROM || process.env.SMTP_USER || 'Letter Shop';
+  const m = String(f).match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+  if (m) return { name: (m[1] || 'Letter Shop').replace(/"/g, ''), email: m[2] };
+  return { name: 'Letter Shop', email: f };
+}
+async function sendViaBrevo(to, subject, html) {
+  const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json', 'accept': 'application/json' },
+    body: JSON.stringify({ sender: mailFrom(), to: [{ email: to }], subject: subject, htmlContent: html })
+  });
+  if (!r.ok) { let t = ''; try { t = await r.text(); } catch (e) {} throw new Error('Brevo ' + r.status + ': ' + t.slice(0, 180)); }
+}
+async function sendLetterEmail(to, season, letter, shareUrl, imageUrl) {
+  const subject = (letter.emoji || '🎃') + ' A card for ' + (letter.name || 'you');
+  const html = letterEmailHtml(season, letter, shareUrl, imageUrl);
+  if (process.env.BREVO_API_KEY) { await sendViaBrevo(to, subject, html); return; }   // HTTPS — never blocked by the host
   const t = getTransporter();
-  if (!t) throw new Error('SMTP not configured');
-  const hasImage = Boolean(imageB64);
-  const mail = {
-    from: process.env.MAIL_FROM || ('Letter Shop <' + process.env.SMTP_USER + '>'),
-    to: to,
-    subject: (letter.emoji || '🎃') + ' A card for ' + (letter.name || 'you'),
-    html: letterEmailHtml(season, letter, shareUrl, hasImage)
-  };
-  if (hasImage) { try { mail.attachments = [{ filename: 'card.jpg', content: Buffer.from(imageB64, 'base64'), cid: 'cardimg' }]; } catch (e) {} }
-  await t.sendMail(mail);
+  if (!t) throw new Error('Email not set up (no BREVO_API_KEY and no SMTP).');
+  await t.sendMail({ from: process.env.MAIL_FROM || ('Letter Shop <' + process.env.SMTP_USER + '>'), to: to, subject: subject, html: html });
 }
 
 app.listen(PORT, function () {
   console.log('\n🎅 Letter shop running: http://localhost:' + PORT);
   console.log('   Razorpay: ' + (keysReady ? 'loaded ✅' : 'MISSING ❌ (add to .env)'));
-  console.log('   Email: ' + (process.env.SMTP_USER ? 'configured ✅' : 'not set'));
+  console.log('   Email: ' + (process.env.BREVO_API_KEY ? 'Brevo HTTP ✅' : (process.env.SMTP_USER ? 'SMTP ⚠️ (may be blocked on cloud hosts)' : 'not set ❌')));
   console.log('   Storage: ' + (store.useRedis ? 'Upstash ✅ (persistent)' : 'local file ⚠️ (resets on restart)'));
   console.log('   Admin: /admin.html  (password ' + (process.env.ADMIN_PASSWORD ? 'set ✅' : 'DEFAULT "changeme" ⚠️') + ')\n');
 });

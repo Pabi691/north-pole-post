@@ -22,7 +22,7 @@ function encodeShare(letter, seasonKey, cineTpl) {
 
 // Season-themed HTML email (dark & scary for Halloween). Includes the card image
 // (as an inline cid attachment, when supplied) and a glowing link to the live card.
-function letterEmailHtml(season, letter, shareUrl, hasImage) {
+function letterEmailHtml(season, letter, shareUrl, imageUrl) {
   const c = (season && season.colors) || {};
   const bg = c.deep || '#160f1f';
   const card = c.paper || '#211733';
@@ -35,8 +35,8 @@ function letterEmailHtml(season, letter, shareUrl, hasImage) {
     return '<p style="margin:0 0 14px;font-size:18px;line-height:1.7;color:' + ink + ';font-family:Georgia,serif;">' + escapeHtml(line) + '</p>';
   }).join('');
 
-  const img = hasImage
-    ? '    <div style="text-align:center;padding:4px 18px 8px;"><img src="cid:cardimg" alt="Your card" width="520" style="max-width:100%;border-radius:14px;border:1px solid ' + accent + ';"></div>'
+  const img = imageUrl
+    ? '    <div style="text-align:center;padding:4px 18px 8px;"><img src="' + escapeHtml(imageUrl) + '" alt="Your card" width="520" style="max-width:100%;border-radius:14px;border:1px solid ' + accent + ';"></div>'
     : '';
 
   const btn = shareUrl ? [

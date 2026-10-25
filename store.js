@@ -110,6 +110,14 @@ async function getCard(code) {
   if (useRedis) { return await redis(['GET', 'npp:card:' + code]); }
   const d = readFile(); return (d.cards && d.cards[code]) || null;
 }
+async function setCardImage(code, b64) {
+  if (useRedis) { await redis(['SET', 'npp:cardimg:' + code, b64, 'EX', 60 * 60 * 24 * 30]); return; }
+  const d = readFile(); d.cardimgs = d.cardimgs || {}; d.cardimgs[code] = b64; writeFile(d);
+}
+async function getCardImage(code) {
+  if (useRedis) { return await redis(['GET', 'npp:cardimg:' + code]); }
+  const d = readFile(); return (d.cardimgs && d.cardimgs[code]) || null;
+}
 
 // ---- per-device free-usage counters ----
 async function incrDevice(id) {
@@ -138,4 +146,4 @@ async function resetAll() {
   const d = readFile(); d.stats = {}; d.daily = {}; d.txns = []; d.devices = {}; writeFile(d);
 }
 
-module.exports = { getConfig, saveConfig, incr, getStats, incrDaily, getDaily, logTxn, listTxns, resetAll, setCard, getCard, incrDevice, getDeviceCount, listDevices, useRedis };
+module.exports = { getConfig, saveConfig, incr, getStats, incrDaily, getDaily, logTxn, listTxns, resetAll, setCard, getCard, setCardImage, getCardImage, incrDevice, getDeviceCount, listDevices, useRedis };
