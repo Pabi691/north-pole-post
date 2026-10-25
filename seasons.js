@@ -67,6 +67,46 @@ const DEFAULT_SEASONS = {
   }
 };
 
+// Friends cards — a punchier, grown-up voice per season (not editable in admin for now).
+const FRIENDS = {
+  halloween: {
+    emoji: '🖤', senderName: 'The Spirits of Spooky Hollow', senderTitle: 'A Midnight Summons', dateline: 'Spooky Hollow, after dark', badge: 'Certified Spooky',
+    letter: {
+      greeting: 'Hey {name},',
+      intro: 'The candles flickered, the floorboards creaked, and your name drifted up from the dark — {name}, the spirits of Spooky Hollow have been talking about you.',
+      deed: 'Word is that you {deed}. Honestly? Iconic. That is exactly the kind of mischief we love around here.',
+      noDeed: 'Word is that you are the kind of legend every haunt needs — equal parts trouble and treasure.',
+      age: '', cityLine: 'We will be drifting through {city} after dark. ',
+      closing: '{cityLine}So grab a drink, light a candle, and if the lights flicker tonight… that is just us, saying hi. 👀',
+      signoff: 'Stay spooky, {name}. Happy Halloween! 🎃🖤'
+    }
+  },
+  christmas: {
+    emoji: '🎄', senderName: 'An Old Friend at the North Pole', senderTitle: 'A Christmas Note', dateline: 'North Pole', badge: 'On the Good List',
+    letter: {
+      greeting: 'Hey {name},',
+      intro: 'All the way from a snowbound little workshop, I wanted to send you a note, {name} — because the best part of this season is the people in it, and you are one of mine.',
+      deed: 'Rumour has it you {deed}. Consider yourself firmly, permanently on the Good List.',
+      noDeed: 'You have made this year warmer just by being you — firmly on the Good List, no questions asked.',
+      age: '', cityLine: 'The sleigh route runs right over {city} this year. ',
+      closing: '{cityLine}So pour something warm, steal the comfiest seat, and know that someone is thinking of you this Christmas.',
+      signoff: 'Merry Christmas, {name}! 🎄'
+    }
+  },
+  newyear: {
+    emoji: '🥂', senderName: 'Father Time (and me)', senderTitle: 'A Midnight Toast', dateline: 'The Edge of Midnight', badge: 'Ready for Round Twelve',
+    letter: {
+      greeting: 'Hey {name},',
+      intro: 'As the clock winds down on another year, {name}, I raised a glass to you — because you helped make this one worth remembering.',
+      deed: 'This was the year you {deed}. Legendary. Here is to doing it all again, only louder.',
+      noDeed: 'This was a big year, and you were a big part of what made it good. Here is to the next one.',
+      age: '', cityLine: 'The fireworks over {city} are going to be unreal this year. ',
+      closing: '{cityLine}So when midnight hits, make some noise, hug whoever is closest, and let us make the new year ridiculous — the good kind.',
+      signoff: 'Happy New Year, {name}! 🥂'
+    }
+  }
+};
+
 function cap(s) { s = (s == null ? '' : String(s)).trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 function fill(str, d) {
   return String(str == null ? '' : str)
@@ -75,8 +115,8 @@ function fill(str, d) {
     .replace(/\{cityLine\}/g, d.cityLine || '');
 }
 
-// Build the letter from a season skin + the form details.
-function buildLetter(season, details) {
+// Build a letter from a "card" (a season skin, or a friends card) + the details.
+function buildFromCard(card, details) {
   details = details || {};
   const d = {
     name: cap(details.name) || 'Friend',
@@ -84,12 +124,12 @@ function buildLetter(season, details) {
     city: cap(details.city),
     deed: (details.deed == null ? '' : String(details.deed)).trim()
   };
-  const L = season.letter || {};
+  const L = card.letter || {};
   const p = [];
   p.push(fill(L.greeting, d));
   p.push(fill(L.intro, d));
   p.push(d.deed ? fill(L.deed, d) : fill(L.noDeed, d));
-  if (d.age) p.push(fill(L.age, d));
+  if (d.age && L.age) p.push(fill(L.age, d));
   const cityLine = d.city ? fill(L.cityLine, d) : '';
   p.push(fill(L.closing, Object.assign({}, d, { cityLine: cityLine })));
   p.push(fill(L.signoff, d));
@@ -97,9 +137,16 @@ function buildLetter(season, details) {
   const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
   return {
     name: d.name, paragraphs: p, date: date,
-    emoji: season.emoji, senderName: season.senderName, senderTitle: season.senderTitle,
-    dateline: season.dateline, badge: season.badge
+    emoji: card.emoji, senderName: card.senderName, senderTitle: card.senderTitle,
+    dateline: card.dateline, badge: card.badge
   };
+}
+
+function friendsCard(season) { return FRIENDS[(season && season.key)] || FRIENDS[DEFAULT_ACTIVE] || FRIENDS.halloween; }
+
+// mode: 'kids' (default) uses the season's own letter; 'friends' uses the friends card.
+function buildLetter(season, details, mode) {
+  return buildFromCard(mode === 'friends' ? friendsCard(season) : season, details);
 }
 
 function activeSeason(cfg) {
@@ -107,4 +154,4 @@ function activeSeason(cfg) {
   return DEFAULT_SEASONS[DEFAULT_ACTIVE];
 }
 
-module.exports = { DEFAULT_SEASONS, DEFAULT_ACTIVE, buildLetter, activeSeason };
+module.exports = { DEFAULT_SEASONS, DEFAULT_ACTIVE, FRIENDS, buildLetter, friendsCard, activeSeason };

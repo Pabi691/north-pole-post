@@ -114,7 +114,7 @@
     var d = { name:cap(details.name)||'Friend', age:(details.age==null?'':String(details.age)).trim(), city:cap(details.city), deed:(details.deed==null?'':String(details.deed)).trim() };
     var p=[]; p.push(fill(Lt.greeting,d)); p.push(fill(Lt.intro,d));
     p.push(d.deed?fill(Lt.deed,d):fill(Lt.noDeed,d));
-    if(d.age) p.push(fill(Lt.age,d));
+    if(d.age && Lt.age) p.push(fill(Lt.age,d));
     var cityLine = d.city ? fill(Lt.cityLine,d) : '';
     p.push(fill(Lt.closing, Object.assign({},d,{cityLine:cityLine})));
     p.push(fill(Lt.signoff,d));

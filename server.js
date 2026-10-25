@@ -13,7 +13,7 @@ const Razorpay = require('razorpay');
 const nodemailer = require('nodemailer');
 
 const store = require('./store');
-const { buildLetter, activeSeason } = require('./seasons');
+const { buildLetter, activeSeason, friendsCard } = require('./seasons');
 const { letterEmailHtml, encodeShare } = require('./letter');
 
 const app = express();
@@ -31,7 +31,8 @@ const razorpay = keysReady
 app.get('/api/site-config', async function (req, res) {
   try {
     const cfg = await store.getConfig();
-    res.json({ keyId: process.env.RAZORPAY_KEY_ID || '', ready: keysReady, season: activeSeason(cfg) });
+    const s = activeSeason(cfg);
+    res.json({ keyId: process.env.RAZORPAY_KEY_ID || '', ready: keysReady, season: s, friends: friendsCard(s) });
   } catch (e) {
     console.error('site-config failed:', e.message);
     res.status(500).json({ error: 'Could not load site config.' });
@@ -78,7 +79,7 @@ app.post('/api/verify', async function (req, res) {
 
     const cfg = await store.getConfig();
     const season = activeSeason(cfg);
-    const letter = buildLetter(season, details);
+    const letter = buildLetter(season, details, details.mode);
     const cineTpl = details.template || 'globe';
 
     const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
