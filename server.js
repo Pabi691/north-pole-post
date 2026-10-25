@@ -94,16 +94,15 @@ app.post('/api/verify', async function (req, res) {
     try { const code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
     const shareUrl = host ? (proto + '://' + host + p) : '';
 
-    let emailed = false;
-    if (details.email) {
-      try { await sendLetterEmail(details.email, season, letter, shareUrl, (req.body && req.body.image) || null); emailed = true; }
-      catch (mailErr) { console.error('email failed:', mailErr && mailErr.message ? mailErr.message : mailErr); }
-    }
+    // Reply immediately — do NOT wait on email/stats (that was the slow part).
+    res.json({ ok: true, letter: letter, emailed: Boolean(details.email), shareUrl: shareUrl });
 
-    // record the sale
-    try { await bump('purchases'); await bump('revenue', parseInt(season.pricePaise, 10) || 0); await store.logTxn({ t: Date.now(), type: 'paid', season: season.key, amount: parseInt(season.pricePaise, 10) || 0, name: String(details.name || '').slice(0, 40), device: String(details.device || '').slice(0, 20) }); } catch (e) {}
-
-    res.json({ ok: true, letter: letter, emailed: emailed, shareUrl: shareUrl });
+    // Record the sale + send the email in the background.
+    const image = (req.body && req.body.image) || null;
+    setImmediate(async function () {
+      try { await bump('purchases'); await bump('revenue', parseInt(season.pricePaise, 10) || 0); await store.logTxn({ t: Date.now(), type: 'paid', season: season.key, amount: parseInt(season.pricePaise, 10) || 0, name: String(details.name || '').slice(0, 40), device: String(details.device || '').slice(0, 20) }); } catch (e) {}
+      if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, image); } catch (mailErr) { console.error('email failed:', mailErr && mailErr.message ? mailErr.message : mailErr); } }
+    });
   } catch (e) {
     console.error('verify failed:', e && e.message ? e.message : e);
     res.status(500).json({ error: 'Something went wrong after payment. Your money is safe — contact support.' });
@@ -130,15 +129,17 @@ app.post('/api/free-unlock', async function (req, res) {
     let p = '/letter.html#' + hash;  // fallback (long) link if storage is unavailable
     try { const code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
     const shareUrl = host ? (proto + '://' + host + p) : '';
-    let emailed = false;
-    if (details.email) {
-      try { await sendLetterEmail(details.email, season, letter, shareUrl, (req.body && req.body.image) || null); emailed = true; }
-      catch (e) { console.error('email failed:', e && e.message ? e.message : e); }
-    }
     let used = 0;
     if (device) { try { used = await store.incrDevice(device); } catch (e) {} }
-    try { await bump('freebies'); await store.logTxn({ t: Date.now(), type: 'free', season: season.key, amount: 0, name: String(details.name || '').slice(0, 40), device: device }); } catch (e) {}
-    res.json({ ok: true, letter: letter, emailed: emailed, shareUrl: shareUrl, used: used, limit: FREE_LIMIT });
+
+    // Reply immediately — email + stats run in the background.
+    res.json({ ok: true, letter: letter, emailed: Boolean(details.email), shareUrl: shareUrl, used: used, limit: FREE_LIMIT });
+
+    const image = (req.body && req.body.image) || null;
+    setImmediate(async function () {
+      try { await bump('freebies'); await store.logTxn({ t: Date.now(), type: 'free', season: season.key, amount: 0, name: String(details.name || '').slice(0, 40), device: device }); } catch (e) {}
+      if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, image); } catch (e) { console.error('email failed:', e && e.message ? e.message : e); } }
+    });
   } catch (e) {
     console.error('free-unlock failed:', e && e.message ? e.message : e);
     res.status(500).json({ error: 'Something went wrong.' });
