@@ -241,15 +241,15 @@
       </div>
 
       <div class="share-box" id="share-box" hidden>
-        <h3>🎉 Unlocked — share the magic!</h3>
+        <h3>🎉 Your card is ready — share it!</h3>
         <p id="email-note">&nbsp;</p>
         <div class="share-btns">
-          <a id="sh-wa" class="btn btn-green" target="_blank" rel="noopener">🟢 WhatsApp</a>
-          <a id="sh-fb" class="btn" style="background:#1877f2;color:#fff" target="_blank" rel="noopener">🔵 Facebook</a>
-          <a id="sh-open" class="btn btn-ghost" target="_blank" rel="noopener">Open letter ↗</a>
+          <button class="btn btn-green" onclick="shareCardImage()">📲 Share card (image)</button>
+          <button class="btn btn-ghost" onclick="saveCardImage()">⬇️ Save image</button>
+          <a id="sh-wa" class="btn btn-ghost" target="_blank" rel="noopener">🔗 Link (with music)</a>
           <button class="btn btn-ghost" onclick="copyShare()">Copy link</button>
         </div>
-        <div style="margin-top:16px"><button class="btn btn-ghost" onclick="restart()">Make another letter</button></div>
+        <div style="margin-top:16px"><button class="btn btn-ghost" onclick="restart()">Make another</button></div>
       </div>
     </div>
   </div>
@@ -269,6 +269,7 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="cinematic.js"></script>
 <script>
   var state = { name:'', age:'', city:'', deed:'', email:'', template:'globe', mode:'kids' };
@@ -346,6 +347,7 @@
     letterObj=Cinematic.buildLetter(cardForMode(), state);
     buildSwitch();
     renderPreview();
+    regenCardImage();
     go('preview');
     Cinematic.music.start();
     fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:'preview'})}).catch(function(){});
@@ -362,23 +364,21 @@
       box.appendChild(b);
     });
   }
-  function selectTemplate(id){ state.template=id; buildSwitch(); renderPreview(); }
+  function selectTemplate(id){ state.template=id; buildSwitch(); renderPreview(); regenCardImage(); }
 
-  function resetPay(){ var b=document.getElementById('pay-btn'); b.disabled = FREE ? false : !ready; b.innerHTML = FREE ? '📲 Share on WhatsApp — Free' : ('Pay <span id="pay-amt">'+rupees(curPrice())+'</span> &amp; Send 🎁'); }
+  function resetPay(){ var b=document.getElementById('pay-btn'); b.disabled = FREE ? false : !ready; b.innerHTML = FREE ? '📲 Share the card — Free' : ('Pay <span id="pay-amt">'+rupees(curPrice())+'</span> &amp; Send 🎁'); }
 
   function applyFreeUI(){
     var pb=document.querySelector('.price-badge'); if(pb) pb.textContent='100% free right now 🎁';
     var nr=document.getElementById('not-ready'); if(nr) nr.style.display='none';
     var pl=document.querySelector('.pay-logos'); if(pl) pl.style.display='none';
     var ef=document.getElementById('f-email'); if(ef){ var fld=ef.closest('.field'); if(fld) fld.style.display='none'; }  // no email step in free mode
-    var fb=document.getElementById('sh-fb'); if(fb) fb.style.display='none';
-    var op=document.getElementById('sh-open'); if(op) op.style.display='none';
     var h=document.querySelector('#send-box h3'); if(h) h.textContent='Your card is ready 🎁';
-    var p=document.querySelector('#send-box p'); if(p) p.textContent="It's completely free right now — tap below to send it straight to WhatsApp.";
+    var p=document.querySelector('#send-box p'); if(p) p.textContent="It's completely free right now — tap below to share the card image.";
     resetPay();
   }
 
-  function sendCard(){ if(FREE) freeShareWhatsApp(); else payAndSend(); }
+  function sendCard(){ if(FREE) freeShare(); else payAndSend(); }
 
   // Build the shareable link in the browser so WhatsApp can open in the same tap.
   function b64urlEncode(obj){
@@ -401,18 +401,34 @@
     toast("You've used all "+FREE_LIMIT+" free cards 🎃");
   }
 
-  function freeShareWhatsApp(){
+  var cardBlob=null, cardToken=0;
+  function currentLook(){ var s=SEASON||{}, cine=s.cine||{}; return { c1:cine.c1, c2:cine.c2, accent:cine.accent, primary:(s.colors&&s.colors.primary)||'#b23b32', decor:(DECOR&&DECOR[s.key])||[] }; }
+  function regenCardImage(){ if(!letterObj || !window.html2canvas || !window.Cinematic || !Cinematic.cardImage) return; cardBlob=null; var tok=++cardToken; Cinematic.cardImage(letterObj, currentLook()).then(function(b){ if(tok===cardToken) cardBlob=b; }).catch(function(){}); }
+  function downloadBlob(blob,name){ var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download=name||'card.jpg'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){ URL.revokeObjectURL(url); },4000); }
+
+  function shareCardImage(){
+    if(!letterObj){ toast('Make the card first.'); return; }
+    var text=((letterObj.emoji)||'🎁')+' A card for '+(state.name||'you')+'! 🎶 Make yours free: '+location.host;
+    if(cardBlob){ Cinematic.shareOrSave(cardBlob, text, 'card.jpg'); return; }
+    toast('Preparing image…');
+    Cinematic.cardImage(letterObj, currentLook()).then(function(b){ cardBlob=b; Cinematic.shareOrSave(b, text, 'card.jpg'); }).catch(function(){ toast('Could not make image.'); });
+  }
+  function saveCardImage(){
+    if(!letterObj) return;
+    if(cardBlob){ downloadBlob(cardBlob,'santa-card.jpg'); toast('Image saved 🎁'); return; }
+    Cinematic.cardImage(letterObj, currentLook()).then(function(b){ cardBlob=b; downloadBlob(b,'santa-card.jpg'); toast('Image saved 🎁'); }).catch(function(){ toast('Could not make image.'); });
+  }
+
+  function freeShare(){
     if(!letterObj){ toast('Make the card first.'); return; }
     if(getLocalUses() >= FREE_LIMIT){ showLimitReached(); return; }
     state.device = deviceId();
-    shareUrl = buildShareUrl(letterObj, (SEASON&&SEASON.key)||'christmas', state.template);
-    var who = state.name || 'you';
-    var msg = (letterObj.emoji||'🎁')+' A card for '+who+' — open it (with music 🎶): '+shareUrl;
-    window.open('https://wa.me/?text='+encodeURIComponent(msg), '_blank');   // opens WhatsApp in this tap
+    shareCardImage();   // share the card IMAGE in this tap (native share sheet → WhatsApp)
     var nowUsed = getLocalUses()+1; setLocalUses(nowUsed);
+    shareUrl = buildShareUrl(letterObj, (SEASON&&SEASON.key)||'christmas', state.template);
     unlock({ shareUrl: shareUrl, emailed: false });
     var left = Math.max(0, FREE_LIMIT - nowUsed);
-    document.getElementById('email-note').textContent = '🎁 Shared! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.';
+    document.getElementById('email-note').textContent = '🎁 Done! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.';
     fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})}).catch(function(){});
   }
 

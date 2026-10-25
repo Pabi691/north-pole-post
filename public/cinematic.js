@@ -196,9 +196,61 @@
     return { start:start, stop:stop, toggle:toggle, isPlaying:function(){return playing;}, onChange:function(f){cb=f;}, setSeason:setSeason, setAudio:setAudio };
   })();
 
+  /* ---------- shareable card image (needs html2canvas on the page) ---------- */
+  var DECOR_BY_SEASON = { halloween:['🎃','🕸️','👻','🕯️','🦇'], christmas:['🎄','🎁','⛄','🔔','❄️'], newyear:['🎆','🥂','🎉','🕛','✨'] };
+  var PRIMARY_BY_SEASON = { halloween:'#ff7a1a', christmas:'#b23b32', newyear:'#c79a20' };
+  function decorFor(k){ return DECOR_BY_SEASON[k] || DECOR_BY_SEASON.christmas; }
+  function primaryFor(k){ return PRIMARY_BY_SEASON[k] || '#b23b32'; }
+
+  function cardImage(L, look){
+    return new Promise(function (resolve, reject) {
+      if (!window.html2canvas) { reject(new Error('html2canvas not loaded')); return; }
+      look = look || {};
+      var primary = look.primary || '#b23b32';
+      var decor = (look.decor || []).map(function (e) { return '<span style="margin:0 9px;font-size:34px">' + e + '</span>'; }).join('');
+      var lines = (L.paragraphs || []).map(function (p) { return '<p style="margin:0 0 14px">' + esc(p) + '</p>'; }).join('');
+      var node = document.createElement('div');
+      node.style.cssText = 'position:fixed;left:-10000px;top:0;z-index:-1;';
+      node.innerHTML =
+        '<div style="width:720px;box-sizing:border-box;padding:46px;font-family:Nunito,Arial,sans-serif;background:linear-gradient(160deg,' + (look.c1 || '#2a4488') + ',' + (look.c2 || '#0a1130') + ')">' +
+          '<div style="background:#fffaf1;border-radius:16px;border-top:8px solid ' + primary + ';padding:44px;box-shadow:0 24px 60px rgba(0,0,0,.4)">' +
+            '<div style="text-align:center">' +
+              '<div style="font-size:54px;line-height:1">' + esc(L.emoji || '🎅') + '</div>' +
+              '<div style="font-family:Fraunces,Georgia,serif;letter-spacing:3px;text-transform:uppercase;font-size:13px;font-weight:700;color:' + primary + ';margin-top:6px">' + esc(L.senderTitle || '') + '</div>' +
+              '<div style="font-size:12px;color:#6d6456;letter-spacing:1px;margin-top:2px">' + esc(L.dateline || '') + ' · ' + esc(L.date || '') + '</div>' +
+            '</div>' +
+            '<div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:25px;line-height:1.7;margin-top:24px;color:#2b2620">' + lines + '</div>' +
+            '<div style="margin-top:22px">' +
+              '<div style="font-size:36px;color:' + primary + ';font-family:Fraunces,cursive">' + esc(L.senderName || '') + '</div>' +
+              '<span style="display:inline-block;margin-top:10px;font-weight:800;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1c5a40;border:2px solid #1c5a40;border-radius:99px;padding:6px 14px">✓ ' + esc(L.badge || '') + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div style="text-align:center;margin-top:20px">' + decor + '</div>' +
+          '<div style="text-align:center;margin-top:8px;color:rgba(255,255,255,.9);font-weight:700;font-size:14px">Make your own free · ' + esc(location.host) + '</div>' +
+        '</div>';
+      document.body.appendChild(node);
+      window.html2canvas(node.firstChild, { backgroundColor: null, scale: 2, useCORS: true, logging: false }).then(function (canvas) {
+        canvas.toBlob(function (blob) { if (node.parentNode) document.body.removeChild(node); blob ? resolve(blob) : reject(new Error('toBlob failed')); }, 'image/jpeg', 0.92);
+      }).catch(function (e) { if (node.parentNode) document.body.removeChild(node); reject(e); });
+    });
+  }
+
+  function shareOrSave(blob, text, filename) {
+    try {
+      var f = new File([blob], filename || 'card.jpg', { type: 'image/jpeg' });
+      if (navigator.canShare && navigator.canShare({ files: [f] }) && navigator.share) {
+        return navigator.share({ files: [f], text: text || '' }).catch(function () {});
+      }
+    } catch (e) {}
+    var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = filename || 'card.jpg';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    return Promise.resolve('saved');
+  }
+
   window.Cinematic = {
     templates: TEMPLATES, render: render, music: music, buildLetter: buildLetter,
-    particles: createParticles,
+    particles: createParticles, cardImage: cardImage, shareOrSave: shareOrSave,
+    decorFor: decorFor, primaryFor: primaryFor,
     themeForSeason: function (k) { return SEASON_THEMES[k] || DEFAULT_THEME; }
   };
 })();

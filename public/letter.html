@@ -55,8 +55,8 @@
     <h3>Pass on the magic 🎁</h3>
     <p>Share this letter with someone who'd smile.</p>
     <div class="btns">
-      <a id="sh-wa" class="b b-wa" target="_blank" rel="noopener">🟢 WhatsApp</a>
-      <a id="sh-fb" class="b b-fb" target="_blank" rel="noopener">🔵 Facebook</a>
+      <button class="b b-wa" onclick="shareImg()">📲 Share card</button>
+      <a id="sh-wa" class="b b-copy" target="_blank" rel="noopener">🟢 WhatsApp link</a>
       <button class="b b-copy" onclick="copyLink()">🔗 Copy link</button>
     </div>
     <div><a class="b b-make" href="/">✨ Create your own letter</a></div>
@@ -65,9 +65,17 @@
 
 <button class="music" id="music" title="Play / pause music" aria-label="Play or pause music" style="display:none">🔔</button>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="cinematic.js"></script>
 <script>
   var CARD_AUDIO = { halloween:'bombinsound-halloween-suspense-horror-halloween-waltz-619348.mp3' };  // music for the shared card, per season
+  var letterCardBlob = null;
+  function lookFor(){ return { c1:theme&&theme.c1, c2:theme&&theme.c2, accent:theme&&theme.accent, primary:Cinematic.primaryFor(seasonKey), decor:Cinematic.decorFor(seasonKey) }; }
+  function shareImg(){
+    var text=((L&&L.emoji)||'🎁')+' A card for '+((L&&L.name)||'you')+'! Make yours free: '+location.host;
+    if(letterCardBlob){ Cinematic.shareOrSave(letterCardBlob, text, 'card.jpg'); return; }
+    Cinematic.cardImage(L, lookFor()).then(function(b){ letterCardBlob=b; Cinematic.shareOrSave(b, text, 'card.jpg'); }).catch(function(){});
+  }
 
   function b64decode(str){
     str=String(str).replace(/-/g,'+').replace(/_/g,'/'); while(str.length%4) str+='=';
@@ -91,12 +99,12 @@
     var url=location.href;
     var msg=(L.emoji||'🎁')+' A letter for '+L.name+' — open it (with music 🎶): '+url;
     document.getElementById('sh-wa').href='https://wa.me/?text='+encodeURIComponent(msg);
-    document.getElementById('sh-fb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url);
 
     document.getElementById('ov-open').addEventListener('click', function(){
       document.getElementById('overlay').classList.add('hide');
       document.getElementById('page').style.display='block';
       Cinematic.render(document.getElementById('cine-mount'), L, cineTpl, { watermark:false, theme:theme });
+      Cinematic.cardImage(L, lookFor()).then(function(b){ letterCardBlob=b; }).catch(function(){});
       document.getElementById('music').style.display='grid';
       Cinematic.music.setSeason(seasonKey);
       Cinematic.music.setAudio(CARD_AUDIO[seasonKey]||null);
