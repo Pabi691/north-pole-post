@@ -208,6 +208,18 @@ app.post('/api/admin/reset', checkAdmin, async function (req, res) {
   catch (e) { res.status(500).json({ error: 'Could not reset.' }); }
 });
 
+app.post('/api/admin/test-email', checkAdmin, async function (req, res) {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return res.json({ ok: false, error: 'SMTP_USER / SMTP_PASS are not set on the server.' });
+  const to = (req.body && req.body.to) || process.env.SMTP_USER;
+  try {
+    const cfg = await store.getConfig();
+    const season = activeSeason(cfg);
+    const letter = buildLetter(season, { name: 'Test', deed: 'tried the test button' }, 'kids');
+    await sendLetterEmail(to, season, letter, '', null);
+    res.json({ ok: true, to: to });
+  } catch (e) { res.json({ ok: false, error: (e && e.message) ? e.message : String(e) }); }
+});
+
 // ---------- email ----------
 let transporter = null;
 function getTransporter() {

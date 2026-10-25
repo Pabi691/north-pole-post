@@ -249,6 +249,12 @@
     </div>
 
     <div class="card">
+      <div class="card-h"><h2>🔧 Diagnostics</h2></div>
+      <p class="muted" style="margin-bottom:12px">Send yourself a test email to check delivery on the live server. If it fails, the exact error is shown.</p>
+      <button class="btn" onclick="testEmail()">📧 Send test email</button>
+    </div>
+
+    <div class="card">
       <div class="card-h"><h2 style="color:var(--red)">⚠️ Danger zone</h2></div>
       <p class="muted" style="margin-bottom:12px">Reset all stats, graphs, transactions and device counts to zero. Your seasons &amp; settings are kept. Use this to clear test data and start fresh at launch.</p>
       <button class="btn" style="background:var(--red);color:#2a0b08" onclick="resetStats()">Reset all stats</button>
@@ -404,6 +410,13 @@
   function loadFree(){ var t=document.getElementById('free-toggle'); if(t) t.checked=!!DATA.config.free; updateFreeLabel(); }
   function updateFreeLabel(){ var el=document.getElementById('free-current'); if(el) el.textContent = DATA.config.free ? 'Currently: FREE for everyone 🎁' : 'Currently: paid (₹ shown at checkout)'; }
   function saveFree(){ DATA.config.free=document.getElementById('free-toggle').checked; updateFreeLabel(); renderStatus(DATA); saveConfig(DATA.config.free?'Free mode ON ✅':'Free mode OFF ✅'); }
+
+  function testEmail(){
+    toast('Sending test email…');
+    fetch('/api/admin/test-email',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':PW},body:JSON.stringify({})})
+      .then(function(r){return r.json();}).then(function(d){ if(d.ok){ toast('✅ Test email sent to '+d.to+' — check inbox & spam'); } else { alert('❌ Email failed:\n\n'+(d.error||'unknown error')); } })
+      .catch(function(){ toast('Network error'); });
+  }
 
   function resetStats(){
     if(!confirm('Reset ALL stats, graphs, transactions and device counts to zero? This cannot be undone.')) return;
