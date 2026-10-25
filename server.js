@@ -189,6 +189,11 @@ app.post('/api/admin/config', checkAdmin, async function (req, res) {
   } catch (e) { res.status(500).json({ error: 'Could not save.' }); }
 });
 
+app.post('/api/admin/reset', checkAdmin, async function (req, res) {
+  try { await store.resetAll(); res.json({ ok: true }); }
+  catch (e) { res.status(500).json({ error: 'Could not reset.' }); }
+});
+
 // ---------- email ----------
 let transporter = null;
 function getTransporter() {

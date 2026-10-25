@@ -247,6 +247,12 @@
 
       <div class="save-row"><button class="btn green" onclick="saveSeason()">💾 Save this season</button><span class="hint">Saves instantly — reload the site to see changes.</span></div>
     </div>
+
+    <div class="card">
+      <div class="card-h"><h2 style="color:var(--red)">⚠️ Danger zone</h2></div>
+      <p class="muted" style="margin-bottom:12px">Reset all stats, graphs, transactions and device counts to zero. Your seasons &amp; settings are kept. Use this to clear test data and start fresh at launch.</p>
+      <button class="btn" style="background:var(--red);color:#2a0b08" onclick="resetStats()">Reset all stats</button>
+    </div>
   </div>
 </div>
 
@@ -398,6 +404,13 @@
   function loadFree(){ var t=document.getElementById('free-toggle'); if(t) t.checked=!!DATA.config.free; updateFreeLabel(); }
   function updateFreeLabel(){ var el=document.getElementById('free-current'); if(el) el.textContent = DATA.config.free ? 'Currently: FREE for everyone 🎁' : 'Currently: paid (₹ shown at checkout)'; }
   function saveFree(){ DATA.config.free=document.getElementById('free-toggle').checked; updateFreeLabel(); renderStatus(DATA); saveConfig(DATA.config.free?'Free mode ON ✅':'Free mode OFF ✅'); }
+
+  function resetStats(){
+    if(!confirm('Reset ALL stats, graphs, transactions and device counts to zero? This cannot be undone.')) return;
+    fetch('/api/admin/reset',{method:'POST',headers:{'x-admin-password':PW}})
+      .then(function(r){return r.json();}).then(function(d){ if(d.ok){ toast('Stats reset ✅'); loadDash(); } else { toast(d.error||'Reset failed'); } })
+      .catch(function(){ toast('Network error'); });
+  }
 
   var tTimer; function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tTimer); tTimer=setTimeout(function(){ t.classList.remove('show'); },2600); }
 </script>

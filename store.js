@@ -125,4 +125,17 @@ async function listDevices() {
   return (readFile().devices) || {};
 }
 
-module.exports = { getConfig, saveConfig, incr, getStats, incrDaily, getDaily, logTxn, listTxns, setCard, getCard, incrDevice, getDeviceCount, listDevices, useRedis };
+// ---- reset all stats (keeps seasons/settings) ----
+async function resetAll() {
+  if (useRedis) {
+    const now = Date.now(); const dates = [];
+    for (let i = 0; i < 60; i++) dates.push(istDate(now - i * 86400000));
+    const keys = ['npp:stat:visits', 'npp:stat:previews', 'npp:stat:purchases', 'npp:stat:revenue', 'npp:stat:freebies', 'npp:devices', 'npp:txns']
+      .concat(dates.map(function (d) { return 'npp:daily:' + d; }));
+    await redis(['DEL'].concat(keys));
+    return;
+  }
+  const d = readFile(); d.stats = {}; d.daily = {}; d.txns = []; d.devices = {}; writeFile(d);
+}
+
+module.exports = { getConfig, saveConfig, incr, getStats, incrDaily, getDaily, logTxn, listTxns, resetAll, setCard, getCard, incrDevice, getDeviceCount, listDevices, useRedis };
