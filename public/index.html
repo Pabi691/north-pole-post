@@ -7,12 +7,13 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎅</text></svg>">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="cinematic.css">
 <style>
-  :root {
+  :root{
     --bg:#f7f0e4; --paper:#fffaf1; --ink:#2b2620; --muted:#6d6456; --line:#e4d8c2;
     --green:#1c5a40; --green-deep:#123c2b; --red:#b23b32; --gold:#bb8c2b; --gold-soft:#e8c876;
     --shadow:24px 24px 60px rgba(40,30,15,.14);
-    --font-display:"Fraunces",Georgia,serif; --font-letter:"Cormorant Garamond",Georgia,serif; --font-ui:"Nunito",system-ui,sans-serif;
+    --font-display:"Fraunces",Georgia,serif; --font-ui:"Nunito",system-ui,sans-serif;
     color-scheme:light;
   }
   @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
@@ -45,24 +46,22 @@
       radial-gradient(120% 90% at 85% -10%,color-mix(in srgb,var(--green) 22%,transparent),transparent 60%),
       radial-gradient(90% 80% at -5% 110%,color-mix(in srgb,var(--red) 16%,transparent),transparent 55%);}
   #snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-  .hero-inner{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center;padding-block:clamp(34px,6vw,64px);}
-  .hero h1{font-size:clamp(2.1rem,6vw,3.4rem);letter-spacing:-.01em;}
+  .hero-inner{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center;padding-block:clamp(34px,6vw,60px);}
+  .hero h1{font-size:clamp(2rem,6vw,3.3rem);letter-spacing:-.01em;}
   .hero h1 em{font-style:italic;color:var(--red);}
-  .lead{margin-top:16px;font-size:1.12rem;color:var(--muted);max-width:40ch;}
-  .cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:26px;}
-  .price-badge{display:inline-flex;align-items:baseline;gap:6px;font-family:var(--font-display);}
-  .price-badge b{font-size:1.5rem;color:var(--green);}
+  .lead{margin-top:16px;font-size:1.1rem;color:var(--muted);max-width:42ch;}
+  .cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:24px;}
+  .price-badge{display:inline-flex;align-items:baseline;gap:6px;font-weight:800;color:var(--green);}
   .trust{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.86rem;color:var(--muted);font-weight:600;}
-  .trust span{display:inline-flex;align-items:center;gap:6px;}
 
   .env{position:relative;aspect-ratio:1.45/1;max-width:100%;border-radius:12px;background:linear-gradient(160deg,#fff,#f4ead6);box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden;}
   .env .flap{position:absolute;top:0;left:0;right:0;height:56%;background:linear-gradient(180deg,#f0e3c9,#e7d6b2);clip-path:polygon(0 0,100% 0,50% 100%);}
   .env .wax{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 36% 32%,var(--red),#7c231c);color:#ffe9cf;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;box-shadow:0 6px 16px rgba(120,30,20,.4),inset 0 0 0 3px rgba(255,255,255,.18);}
   .env .stamp{position:absolute;right:14px;top:12px;width:52px;height:64px;background:var(--paper);border:2px dashed var(--gold);border-radius:4px;display:grid;place-items:center;font-size:1.5rem;}
-  .env .addr{position:absolute;left:20px;bottom:18px;font-family:var(--font-letter);color:#4a4335;}
+  .env .addr{position:absolute;left:20px;bottom:18px;font-family:"Cormorant Garamond",serif;color:#4a4335;}
   .env .addr b{display:block;font-size:1.15rem;}
 
-  .btn{appearance:none;border:0;cursor:pointer;font-family:var(--font-ui);font-weight:800;font-size:1rem;padding:14px 26px;border-radius:999px;transition:transform .12s ease,box-shadow .2s ease,background .2s;}
+  .btn{appearance:none;border:0;cursor:pointer;font-family:var(--font-ui);font-weight:800;font-size:1rem;padding:14px 26px;border-radius:999px;transition:transform .12s ease,box-shadow .2s ease,background .2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
   .btn-primary{background:var(--red);color:#fff6ea;box-shadow:0 10px 24px color-mix(in srgb,var(--red) 40%,transparent);}
   .btn-primary:hover{transform:translateY(-2px);}
   .btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);}
@@ -70,74 +69,53 @@
   .btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
   .btn-block{width:100%;}
 
-  section{padding-block:clamp(40px,7vw,72px);}
-  .sec-head{text-align:center;max-width:54ch;margin:0 auto 36px;}
+  section{padding-block:clamp(38px,7vw,68px);}
+  .sec-head{text-align:center;max-width:54ch;margin:0 auto 34px;}
   .sec-head h2{font-size:clamp(1.6rem,4vw,2.3rem);}
   .sec-head p{color:var(--muted);margin-top:12px;}
-
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-  .step-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:26px 22px;}
+  .step-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px 20px;}
   .step-num{font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:1.3rem;}
-  .step-card h3{margin:10px 0 6px;font-size:1.2rem;}
-  .step-card p{color:var(--muted);font-size:.95rem;}
+  .step-card h3{margin:10px 0 6px;font-size:1.15rem;}
+  .step-card p{color:var(--muted);font-size:.94rem;}
 
   .builder{background:var(--green-deep);color:#f2ecdd;}
-  .panel{background:var(--paper);color:var(--ink);border-radius:20px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:640px;margin:0 auto;}
-  .progress{display:flex;gap:8px;margin-bottom:24px;}
-  .progress i{height:6px;flex:1;border-radius:99px;background:var(--line);}
-  .progress i.on{background:var(--gold);}
-  .field{margin-bottom:18px;}
+  .panel{background:var(--paper);color:var(--ink);border-radius:20px;box-shadow:var(--shadow);padding:clamp(20px,4vw,34px);max-width:720px;margin:0 auto;}
+  .field{margin-bottom:16px;}
   .field label{display:block;font-weight:700;margin-bottom:7px;font-size:.95rem;}
   .field label span{color:var(--muted);font-weight:600;}
   .field input,.field textarea{width:100%;font-family:var(--font-ui);font-size:1rem;padding:13px 15px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);}
   .field input:focus,.field textarea:focus{outline:2px solid var(--gold);border-color:transparent;}
-  .field textarea{min-height:92px;resize:vertical;}
+  .field textarea{min-height:88px;resize:vertical;}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .hint{font-size:.82rem;color:var(--muted);margin-top:6px;}
   .err{color:var(--red);font-size:.82rem;margin-top:6px;font-weight:700;}
-  .nav-row{display:flex;gap:12px;margin-top:8px;}
-  .nav-row .btn{flex:1;}
 
-  .order{border:1px dashed var(--line);border-radius:14px;padding:18px;margin-bottom:20px;background:var(--bg);}
-  .order .row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;}
-  .order .row.total{border-top:1px solid var(--line);margin-top:8px;padding-top:12px;font-weight:800;font-size:1.15rem;}
-  .secure-flag{display:inline-flex;align-items:center;gap:7px;background:color-mix(in srgb,var(--green) 14%,var(--paper));color:var(--ink);border:1px solid color-mix(in srgb,var(--green) 40%,var(--line));font-weight:700;font-size:.82rem;padding:7px 12px;border-radius:99px;margin-bottom:18px;}
-  .warn-flag{display:none;align-items:center;gap:7px;background:color-mix(in srgb,var(--red) 12%,var(--paper));color:var(--ink);border:1px solid color-mix(in srgb,var(--red) 40%,var(--line));font-weight:700;font-size:.82rem;padding:10px 12px;border-radius:12px;margin-bottom:18px;}
-  .pay-logos{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;font-size:.8rem;color:var(--muted);font-weight:700;}
-  .pay-logos span{border:1px solid var(--line);border-radius:8px;padding:5px 10px;}
+  .preview-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .tpl-switch{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:16px 0 4px;}
+  .tpl-chip{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:9px 14px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);font-size:.9rem;}
+  .tpl-chip.active{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--paper));}
+  .music-btn{border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:9px 15px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);font-size:.88rem;}
 
-  .letter-stage{display:none;}
-  .letter{position:relative;background:
-      repeating-linear-gradient(0deg,transparent,transparent 31px,color-mix(in srgb,var(--gold) 14%,transparent) 32px),var(--paper);
-    border:1px solid var(--line);border-top:6px solid var(--red);border-radius:6px;padding:clamp(24px,5vw,46px);box-shadow:var(--shadow);font-family:var(--font-letter);}
-  .letter .np{text-align:center;margin-bottom:18px;}
-  .letter .np .mark{font-size:2rem;}
-  .letter .np b{display:block;font-family:var(--font-display);letter-spacing:.14em;text-transform:uppercase;font-size:.78rem;color:var(--red);margin-top:4px;}
-  .letter .np small{color:var(--muted);font-family:var(--font-ui);letter-spacing:.1em;}
-  .letter .body{font-size:clamp(1.15rem,2.6vw,1.42rem);line-height:1.75;}
-  .letter .body p{margin-bottom:14px;}
-  .letter .sign{margin-top:22px;}
-  .letter .sign .santa{font-size:2.1rem;color:var(--red);line-height:1;}
-  .letter .nice{display:inline-block;margin-top:10px;font-family:var(--font-ui);font-weight:800;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);border:1.5px solid var(--green);border-radius:99px;padding:6px 14px;transform:rotate(-4deg);}
-
-  .share{margin-top:26px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px;}
-  .share h3{font-size:1.25rem;}
-  .share p{color:var(--muted);margin-top:6px;font-size:.95rem;}
+  .send-box,.share-box{margin-top:20px;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--bg);}
+  .send-box h3,.share-box h3{font-size:1.2rem;margin-bottom:4px;}
+  .send-box p,.share-box p{color:var(--muted);font-size:.92rem;}
+  .pay-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:flex-start;}
+  .pay-row .field{flex:1;min-width:180px;margin:0;}
   .share-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
-  .share-btns .btn{padding:12px 20px;font-size:.95rem;text-decoration:none;text-align:center;}
-  .ref{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
-  .ref code{flex:1;min-width:160px;background:var(--bg);border:1.5px dashed var(--gold);border-radius:12px;padding:12px 16px;font-family:var(--font-ui);font-weight:800;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--green-deep);color:#eef7f0;padding:12px 20px;border-radius:99px;font-weight:700;opacity:0;transition:.25s;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.3);}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .share-btns .btn{padding:12px 20px;font-size:.95rem;}
+  .warn-flag{display:none;align-items:center;gap:7px;background:color-mix(in srgb,var(--red) 12%,var(--paper));border:1px solid color-mix(in srgb,var(--red) 40%,var(--line));font-weight:700;font-size:.82rem;padding:10px 12px;border-radius:12px;margin-top:12px;}
+  .pay-logos{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:.78rem;color:var(--muted);font-weight:700;}
+  .pay-logos span{border:1px solid var(--line);border-radius:8px;padding:4px 9px;}
 
   footer{border-top:1px solid var(--line);color:var(--muted);font-size:.86rem;}
-  footer .bar{flex-wrap:wrap;}
+  .foot-links{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;font-weight:700;font-size:.9rem;margin-bottom:12px;}
+  .foot-links a{text-decoration:none;}
 
-  @media (max-width:760px){
-    .hero-inner{grid-template-columns:1fr;}
-    .hero .env{order:-1;max-width:420px;}
-    .steps{grid-template-columns:1fr;}
-  }
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--green-deep);color:#eef7f0;padding:12px 20px;border-radius:99px;font-weight:700;opacity:0;transition:.25s;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:760px){ .hero-inner{grid-template-columns:1fr;} .hero .env{order:-1;max-width:420px;} .steps{grid-template-columns:1fr;} }
   @media (prefers-reduced-motion:reduce){ .btn{transition:none;} }
 </style>
 </head>
@@ -146,7 +124,7 @@
 <header>
   <div class="wrap bar">
     <div class="brand"><span class="seal">✶</span> North Pole Post <small>&nbsp;· est. the first snow</small></div>
-    <button class="btn btn-ghost" style="padding:9px 18px;font-size:.9rem" onclick="go('form')">Make a letter</button>
+    <button class="btn btn-ghost" style="padding:9px 18px;font-size:.9rem" onclick="go('create')">Make a letter</button>
   </div>
 </header>
 
@@ -155,22 +133,18 @@
   <div class="wrap hero-inner">
     <div>
       <p class="eyebrow">Personalised · posted from the North Pole</p>
-      <h1>A real letter from <em>Santa</em>, written just for your child.</h1>
-      <p class="lead">Add your child's name, their age and one good thing they did this year. In seconds you'll get a beautiful, personal letter from Santa — on screen and in your inbox.</p>
+      <h1>A cinematic letter from <em>Santa</em>, just for your child.</h1>
+      <p class="lead">Add a name and a good deed, then watch it come to life with music — free. Love it? Send it for a tiny price, or switch to another magical template.</p>
       <div class="cta-row">
-        <button class="btn btn-primary" onclick="go('form')">Create your letter →</button>
-        <span class="price-badge"><b id="hero-price">₹—</b></span>
+        <button class="btn btn-primary" onclick="go('create')">Create &amp; preview — free ✨</button>
+        <span class="price-badge">Preview free · Send <span id="hero-price">₹—</span></span>
       </div>
       <div class="trust">
-        <span>✶ Ready in under a minute</span>
-        <span>✶ Keepsake quality</span>
-        <span>✶ Secure payment by Razorpay</span>
+        <span>🎬 4 cinematic templates</span><span>🎶 With music</span><span>🔒 Secure Razorpay checkout</span>
       </div>
     </div>
     <div class="env" aria-hidden="true">
-      <div class="flap"></div>
-      <div class="stamp">🦌</div>
-      <div class="wax">NP</div>
+      <div class="flap"></div><div class="stamp">🦌</div><div class="wax">NP</div>
       <div class="addr"><b>For a very good child</b>Somewhere warm &amp; cosy, Earth</div>
     </div>
   </div>
@@ -178,28 +152,22 @@
 
 <section id="how">
   <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">How it works</p>
-      <h2>Three small steps to Christmas magic</h2>
-      <p>No app, no account. Just a few details and you're done.</p>
-    </div>
+    <div class="sec-head"><p class="eyebrow">How it works</p><h2>Three steps to Christmas magic</h2><p>No app, no account. See it before you pay.</p></div>
     <div class="steps">
-      <div class="step-card"><div class="step-num">01</div><h3>Tell Santa about the child</h3><p>Their first name, age and one kind or brave thing they did this year.</p></div>
-      <div class="step-card"><div class="step-num">02</div><h3>Pay securely</h3><p>UPI, card, netbanking or wallet — handled safely by Razorpay.</p></div>
-      <div class="step-card"><div class="step-num">03</div><h3>Get the letter instantly</h3><p>A personal letter from Santa appears on screen and lands in your inbox.</p></div>
+      <div class="step-card"><div class="step-num">01</div><h3>Tell Santa about the child</h3><p>Their first name, age and one kind thing they did this year.</p></div>
+      <div class="step-card"><div class="step-num">02</div><h3>Watch it — free</h3><p>A cinematic letter plays with music. Switch between 4 templates.</p></div>
+      <div class="step-card"><div class="step-num">03</div><h3>Love it? Send it</h3><p>Pay a small price to share on WhatsApp/Facebook and get an email copy.</p></div>
     </div>
   </div>
 </section>
 
 <section class="builder" id="make">
   <div class="wrap">
-    <!-- FORM -->
-    <div class="panel" id="panel-form">
-      <div class="progress"><i class="on"></i><i></i><i></i></div>
-      <p class="eyebrow" style="color:var(--gold)">Step 1 of 3</p>
+    <!-- STEP 1: CREATE -->
+    <div class="panel" id="panel-create">
+      <p class="eyebrow" style="color:var(--gold)">Step 1 of 2</p>
       <h2 style="font-size:1.6rem;margin:6px 0 4px">Tell Santa who it's for</h2>
-      <p style="color:var(--muted);margin-bottom:22px">Santa likes little details — they make the letter feel real.</p>
-
+      <p style="color:var(--muted);margin-bottom:22px">Little details make the letter feel real — and it's free to preview.</p>
       <div class="field">
         <label for="f-name">Child's first name</label>
         <input id="f-name" type="text" placeholder="e.g. Aarav" autocomplete="off">
@@ -207,226 +175,208 @@
       </div>
       <div class="two">
         <div class="field"><label for="f-age">Age <span>(optional)</span></label><input id="f-age" type="number" min="1" max="17" placeholder="e.g. 6"></div>
-        <div class="field"><label for="f-city">Town / city <span>(optional)</span></label><input id="f-city" type="text" placeholder="e.g. Pune"></div>
+        <div class="field"><label for="f-city">Town / city <span>(optional)</span></label><input id="f-city" type="text" placeholder="e.g. Kolkata"></div>
       </div>
       <div class="field">
         <label for="f-deed">One good thing they did this year</label>
         <textarea id="f-deed" placeholder="e.g. helped look after her baby brother and shared her toys"></textarea>
-        <div class="hint">Santa will mention this in the letter. Keep it short and sweet.</div>
+        <div class="hint">Santa mentions this in the letter. Keep it short and sweet.</div>
       </div>
-      <div class="field">
-        <label for="f-email">Your email <span>(where we send it)</span></label>
-        <input id="f-email" type="email" placeholder="you@example.com" autocomplete="email">
-        <div class="err" id="e-email" hidden>Please add a valid email.</div>
-      </div>
-      <div class="nav-row"><button class="btn btn-primary btn-block" onclick="toPay()">Continue to payment →</button></div>
+      <button class="btn btn-primary btn-block" onclick="goPreview()">See your letter ✨</button>
     </div>
 
-    <!-- PAY -->
-    <div class="panel" id="panel-pay" hidden>
-      <div class="progress"><i class="on"></i><i class="on"></i><i></i></div>
-      <p class="eyebrow" style="color:var(--gold)">Step 2 of 3</p>
-      <h2 style="font-size:1.6rem;margin:6px 0 18px">Checkout</h2>
+    <!-- STEP 2: PREVIEW + SEND -->
+    <div class="panel" id="panel-preview" hidden>
+      <div class="preview-top">
+        <div><p class="eyebrow" style="color:var(--gold)">Step 2 of 2 · Preview</p><h2 style="font-size:1.5rem;margin-top:4px">Your cinematic letter 🎬</h2></div>
+        <button class="btn btn-ghost" style="padding:9px 16px;font-size:.9rem" onclick="go('create')">← Edit details</button>
+      </div>
 
-      <div class="warn-flag" id="not-ready">⚠️ Payments aren't switched on yet. Add your Razorpay keys to the <b>.env</b> file and restart the server.</div>
-      <div class="secure-flag" id="secure-note">🔒 Secure payment — handled by Razorpay</div>
-      <div class="order">
-        <div class="row"><span>Personalised letter for <b id="sum-name">—</b></span><span id="line-price">₹—</span></div>
-        <div class="row total"><span>Total</span><span id="total-price">₹—</span></div>
-      </div>
-      <button class="btn btn-green btn-block" id="pay-btn" onclick="pay()">Pay <span id="pay-amt">₹—</span> →</button>
-      <div class="pay-logos"><span>UPI</span><span>Cards</span><span>Netbanking</span><span>Wallets</span></div>
-      <div class="nav-row" style="margin-top:18px"><button class="btn btn-ghost" onclick="go('form')">← Back</button></div>
-    </div>
+      <div id="cine-mount"></div>
 
-    <!-- LETTER -->
-    <div class="letter-stage" id="panel-letter">
-      <div style="text-align:center;margin-bottom:22px">
-        <p class="eyebrow" style="color:var(--gold-soft)">Step 3 of 3 · Delivered</p>
-        <h2 style="color:#fdf6e7;font-size:1.7rem">🎉 Your letter has arrived!</h2>
-        <p style="color:#cfe0d1;margin-top:8px" id="email-note">&nbsp;</p>
+      <div class="tpl-switch" id="tpl-switch"></div>
+      <div style="text-align:center"><button class="music-btn" id="music-btn" onclick="Cinematic.music.toggle()">🔔 Music</button></div>
+
+      <!-- SEND / UNLOCK -->
+      <div class="send-box" id="send-box">
+        <h3>Send this letter 🎁</h3>
+        <p>Pay once to unlock sharing (WhatsApp &amp; Facebook) and get an email copy. Removes the preview mark.</p>
+        <div class="warn-flag" id="not-ready">⚠️ Payments aren't switched on yet. Add your Razorpay keys in Render → Environment.</div>
+        <div class="pay-row">
+          <div class="field">
+            <label for="f-email">Your email <span>(where we send it)</span></label>
+            <input id="f-email" type="email" placeholder="you@example.com" autocomplete="email">
+            <div class="err" id="e-email" hidden>Please add a valid email.</div>
+          </div>
+          <button class="btn btn-green" id="pay-btn" onclick="payAndSend()" style="align-self:flex-end;white-space:nowrap">Pay <span id="pay-amt">₹—</span> &amp; Send 🎁</button>
+        </div>
+        <div class="pay-logos"><span>UPI</span><span>Cards</span><span>Netbanking</span><span>Wallets</span></div>
       </div>
-      <div class="letter" id="letter-card">
-        <div class="np"><div class="mark">🎅</div><b>Office of Santa Claus</b><small id="l-date">North Pole</small></div>
-        <div class="body" id="l-body"></div>
-        <div class="sign"><div class="santa">Santa Claus</div><span class="nice">✓ On the Nice List</span></div>
-      </div>
-      <div class="share">
-        <h3>Share this letter 🎁</h3>
-        <p>Send it to family &amp; friends — it opens with festive music 🎶 and a surprise theme. Each share also invites them to make their own.</p>
+
+      <!-- SHARE (after payment) -->
+      <div class="share-box" id="share-box" hidden>
+        <h3>🎉 Unlocked — share the magic!</h3>
+        <p id="email-note">&nbsp;</p>
         <div class="share-btns">
           <a id="sh-wa" class="btn btn-green" target="_blank" rel="noopener">🟢 WhatsApp</a>
           <a id="sh-fb" class="btn" style="background:#1877f2;color:#fff" target="_blank" rel="noopener">🔵 Facebook</a>
           <a id="sh-open" class="btn btn-ghost" target="_blank" rel="noopener">Open letter ↗</a>
-          <button id="sh-copy" class="btn btn-ghost" onclick="copyShare()">Copy link</button>
+          <button class="btn btn-ghost" onclick="copyShare()">Copy link</button>
         </div>
-        <div class="ref" style="margin-top:18px">
-          <code id="ref-code">— <button class="btn" style="padding:4px 10px;font-size:.8rem;background:var(--green);color:#fff" onclick="copyRef()">Copy</button></code>
-        </div>
-        <p style="font-size:.82rem;color:var(--muted);margin-top:8px">🎟️ Your referral code — friends get ₹20 off, and so do you.</p>
+        <div style="margin-top:16px"><button class="btn btn-ghost" onclick="restart()">Make another letter</button></div>
       </div>
-      <div class="nav-row" style="max-width:640px;margin:22px auto 0"><button class="btn btn-ghost" style="color:#fdf6e7;border-color:rgba(255,255,255,.3)" onclick="restart()">Make another letter</button></div>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap" style="padding-block:22px;">
-    <nav style="display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;font-weight:700;font-size:.9rem;margin-bottom:12px;">
-      <a href="/pricing.html">Pricing</a>
-      <a href="/terms.html">Terms</a>
-      <a href="/privacy.html">Privacy</a>
-      <a href="/refund.html">Refunds</a>
-      <a href="/contact.html">Contact</a>
+    <nav class="foot-links">
+      <a href="/pricing.html">Pricing</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a><a href="/refund.html">Refunds</a><a href="/contact.html">Contact</a>
     </nav>
     <div class="bar" style="justify-content:center;gap:6px;"><span>© North Pole Post 🎄 · Secure checkout by Razorpay · Made in India</span></div>
   </div>
 </footer>
 <div class="toast" id="toast"></div>
 
+<script src="cinematic.js"></script>
 <script>
-  var state = { name:'', age:'', city:'', deed:'', email:'' };
-  var cfg = { keyId:'', pricePaise:100, currency:'INR', ready:false };
-  var shareUrl = '';
+  var state = { name:'', age:'', city:'', deed:'', email:'', template:'globe' };
+  var cfg = { keyId:'', pricePaise:1000, currency:'INR', ready:false };
+  var shareUrl = '', paid = false, letterObj = null;
 
   function rupees(paise){ return '₹' + (paise/100).toFixed(paise % 100 === 0 ? 0 : 2); }
 
-  // Load price + public key from the server
   fetch('/api/config').then(function(r){ return r.json(); }).then(function(c){
-    cfg = c;
-    var pr = rupees(c.pricePaise);
+    cfg = c; var pr = rupees(c.pricePaise);
     document.getElementById('hero-price').textContent = pr;
-    document.getElementById('line-price').textContent = pr;
-    document.getElementById('total-price').textContent = pr;
     document.getElementById('pay-amt').textContent = pr;
-    if(!c.ready){
-      document.getElementById('not-ready').style.display = 'flex';
-      document.getElementById('secure-note').style.display = 'none';
-      document.getElementById('pay-btn').disabled = true;
-    }
-  }).catch(function(){ /* server not reachable; leave placeholders */ });
+    if(!c.ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
+  }).catch(function(){});
 
-  function go(step){
-    document.getElementById('panel-form').hidden   = step!=='form';
-    document.getElementById('panel-pay').hidden    = step!=='pay';
-    document.getElementById('panel-letter').style.display = step==='letter' ? 'block' : 'none';
-    if(step!=='intro'){ document.getElementById('make').scrollIntoView({behavior:'smooth',block:'start'}); }
+  function cap(s){ s=(s==null?'':String(s)).trim(); return s?s.charAt(0).toUpperCase()+s.slice(1):s; }
+  function buildLetterClient(d){
+    var name=cap(d.name)||'Friend', age=(d.age==null?'':String(d.age)).trim(), city=cap(d.city), deed=(d.deed==null?'':String(d.deed)).trim();
+    var p=[]; p.push('Dear '+name+',');
+    p.push('All the way up here at the North Pole, the elves and I have been keeping a close eye on you — and '+name+', I am so proud of you.');
+    if(deed) p.push('I heard that you '+deed+'. That is exactly the kind of kindness that makes your name shine on my Nice List.');
+    else p.push('You have been kind, brave and helpful this year, and your name shines bright on my Nice List.');
+    if(age) p.push('Turning '+age+' is a big deal, you know. Big enough to keep being wonderful, and still small enough to believe in a little Christmas magic.');
+    p.push((city?'The reindeer already know the way to '+city+'. ':'')+'So on Christmas Eve, hang your stocking, leave out a biscuit or two, and get a good night’s sleep. I’ll do the rest.');
+    p.push('Keep being you, '+name+'. Merry Christmas! 🎄');
+    var date=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+    return { name:name, paragraphs:p, date:date };
   }
 
-  function toPay(){
-    var name = document.getElementById('f-name').value.trim();
-    var email = document.getElementById('f-email').value.trim();
-    var okName = name.length>0, okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    document.getElementById('e-name').hidden = okName;
-    document.getElementById('e-email').hidden = okEmail;
-    if(!okName || !okEmail) return;
-    state.name=name; state.email=email;
+  function go(step){
+    document.getElementById('panel-create').hidden = step!=='create';
+    document.getElementById('panel-preview').hidden = step!=='preview';
+    document.getElementById('make').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function goPreview(){
+    var name=document.getElementById('f-name').value.trim();
+    if(!name){ document.getElementById('e-name').hidden=false; return; }
+    document.getElementById('e-name').hidden=true;
+    state.name=name;
     state.age=document.getElementById('f-age').value.trim();
     state.city=document.getElementById('f-city').value.trim();
     state.deed=document.getElementById('f-deed').value.trim();
-    document.getElementById('sum-name').textContent = state.name;
-    go('pay');
+    if(!state.template) state.template='globe';
+    letterObj=buildLetterClient(state);
+    buildSwitch();
+    renderPreview();
+    go('preview');
+    Cinematic.music.start(); // this click is the user gesture that allows audio
   }
 
-  function resetPayBtn(){ var b=document.getElementById('pay-btn'); b.disabled=!cfg.ready; b.innerHTML='Pay <span id="pay-amt">'+rupees(cfg.pricePaise)+'</span> →'; }
+  function renderPreview(){ Cinematic.render(document.getElementById('cine-mount'), letterObj, state.template, { watermark: !paid }); }
 
-  function pay(){
-    if(!cfg.ready){ toast('Payments not switched on yet — see the .env step.'); return; }
-    if(typeof Razorpay === 'undefined'){ toast('Payment library did not load. Check your internet.'); return; }
+  function buildSwitch(){
+    var box=document.getElementById('tpl-switch'); box.innerHTML='';
+    Cinematic.templates.forEach(function(t){
+      var b=document.createElement('button');
+      b.className='tpl-chip'+(t.id===state.template?' active':'');
+      b.innerHTML=t.emoji+' '+t.name; b.onclick=function(){ selectTemplate(t.id); };
+      box.appendChild(b);
+    });
+  }
+  function selectTemplate(id){
+    state.template=id;
+    buildSwitch();
+    renderPreview();
+  }
+
+  function resetPay(){ var b=document.getElementById('pay-btn'); b.disabled=!cfg.ready; b.innerHTML='Pay <span id="pay-amt">'+rupees(cfg.pricePaise)+'</span> &amp; Send 🎁'; }
+
+  function payAndSend(){
+    var email=document.getElementById('f-email').value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('e-email').hidden=false; return; }
+    document.getElementById('e-email').hidden=true; state.email=email;
+    if(!cfg.ready){ toast('Payments not switched on yet.'); return; }
+    if(typeof Razorpay==='undefined'){ toast('Payment library did not load. Check internet.'); return; }
     var b=document.getElementById('pay-btn'); b.disabled=true; b.textContent='Starting…';
-
     fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
       .then(function(r){ return r.json(); })
       .then(function(order){
-        if(order.error){ toast(order.error); resetPayBtn(); return; }
-        var options = {
-          key: cfg.keyId,
-          amount: order.amount,
-          currency: order.currency,
-          name: 'North Pole Post',
-          description: 'Personalised Letter from Santa',
-          order_id: order.orderId,
-          prefill: { name: state.name, email: state.email },
-          theme: { color: '#b23b32' },
-          handler: function(resp){ verify(resp); },
-          modal: { ondismiss: function(){ resetPayBtn(); } }
-        };
-        var rzp = new Razorpay(options);
-        rzp.on('payment.failed', function(){ toast('Payment failed. Please try again.'); resetPayBtn(); });
-        rzp.open();
-      })
-      .catch(function(){ toast('Could not reach the server.'); resetPayBtn(); });
+        if(order.error){ toast(order.error); resetPay(); return; }
+        var options={ key:cfg.keyId, amount:order.amount, currency:order.currency, name:'North Pole Post',
+          description:'Letter from Santa for '+state.name, order_id:order.orderId,
+          prefill:{name:state.name,email:state.email}, theme:{color:'#b23b32'},
+          handler:function(resp){ verify(resp); }, modal:{ondismiss:function(){ resetPay(); }} };
+        var rzp=new Razorpay(options); rzp.on('payment.failed',function(){ toast('Payment failed. Try again.'); resetPay(); }); rzp.open();
+      }).catch(function(){ toast('Could not reach the server.'); resetPay(); });
   }
 
   function verify(resp){
     var b=document.getElementById('pay-btn'); b.disabled=true; b.textContent='Confirming with the North Pole…';
     fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        razorpay_order_id: resp.razorpay_order_id,
-        razorpay_payment_id: resp.razorpay_payment_id,
-        razorpay_signature: resp.razorpay_signature,
-        details: state
-      })})
+      body:JSON.stringify({ razorpay_order_id:resp.razorpay_order_id, razorpay_payment_id:resp.razorpay_payment_id, razorpay_signature:resp.razorpay_signature, details:state })})
       .then(function(r){ return r.json(); })
-      .then(function(data){
-        if(data.ok){
-          renderLetter(data.letter);
-          setupShare(data.shareUrl);
-          document.getElementById('email-note').textContent = data.emailed
-            ? ('We’ve also emailed a copy to ' + state.email + '.')
-            : 'Tip: set up email in .env to auto-send a copy.';
-          go('letter');
-          toast('Payment successful 🎅');
-        } else { toast(data.error || 'Could not verify payment.'); resetPayBtn(); }
-      })
-      .catch(function(){ toast('Network error after payment.'); resetPayBtn(); });
+      .then(function(data){ if(data.ok){ unlock(data); } else { toast(data.error||'Could not verify payment.'); resetPay(); } })
+      .catch(function(){ toast('Network error after payment.'); resetPay(); });
   }
 
-  function renderLetter(L){
-    document.getElementById('l-date').textContent = 'North Pole · ' + L.date;
-    document.getElementById('l-body').innerHTML = L.paragraphs.map(function(p){
-      return '<p>' + p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>';
-    }).join('');
-    document.getElementById('ref-code').childNodes[0].nodeValue = L.refCode + ' ';
-  }
-
-  function setupShare(url){
-    shareUrl = url || '';
-    var who = state.name || 'your child';
-    var msg = '🎅 I got a letter from Santa for ' + who + '! Open it (with music 🎶): ' + shareUrl;
-    var wa = document.getElementById('sh-wa'), fb = document.getElementById('sh-fb'), op = document.getElementById('sh-open');
-    if(wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(msg);
-    if(fb) fb.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
-    if(op) op.href = shareUrl;
+  function unlock(data){
+    paid=true; shareUrl=data.shareUrl||'';
+    renderPreview(); // re-render without the watermark — a little reveal
+    document.getElementById('send-box').hidden=true;
+    var who=state.name||'your child';
+    var msg='🎅 I got a letter from Santa for '+who+'! Open it (with music 🎶): '+shareUrl;
+    var wa=document.getElementById('sh-wa'), fb=document.getElementById('sh-fb'), op=document.getElementById('sh-open');
+    if(wa) wa.href='https://wa.me/?text='+encodeURIComponent(msg);
+    if(fb) fb.href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(shareUrl);
+    if(op) op.href=shareUrl;
+    document.getElementById('email-note').textContent = data.emailed ? ('A copy was emailed to '+state.email+'.') : 'Your letter is ready. (Set up email in .env to also send a copy.)';
+    document.getElementById('share-box').hidden=false;
+    document.getElementById('share-box').scrollIntoView({behavior:'smooth',block:'center'});
+    toast('Unlocked! Ready to send 🎉');
   }
 
   function copyShare(){
-    if(!shareUrl){ toast('Link not ready yet'); return; }
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(shareUrl).then(function(){ toast('Link copied! 🎁'); }, function(){ toast(shareUrl); });
-    } else { toast(shareUrl); }
+    if(!shareUrl){ toast('Link not ready'); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(shareUrl).then(function(){ toast('Link copied! 🎁'); }, function(){ toast(shareUrl); }); }
+    else { toast(shareUrl); }
   }
 
-  function copyRef(){
-    var txt = document.getElementById('ref-code').childNodes[0].nodeValue.trim();
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(function(){ toast('Code copied! 🎁'); }, function(){ toast('Your code: '+txt); });
-    } else { toast('Your code: '+txt); }
+  function restart(){
+    paid=false; shareUrl='';
+    ['f-name','f-age','f-city','f-deed','f-email'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('share-box').hidden=true; document.getElementById('send-box').hidden=false;
+    resetPay(); Cinematic.music.stop(); go('create');
   }
 
-  function restart(){ ['f-name','f-age','f-city','f-deed','f-email'].forEach(function(id){ document.getElementById(id).value=''; }); resetPayBtn(); go('form'); }
+  Cinematic.music.onChange(function(p){ var b=document.getElementById('music-btn'); if(b) b.textContent = p ? '🔔 Music on' : '🔇 Music off'; });
 
-  var tTimer;
-  function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tTimer); tTimer=setTimeout(function(){ t.classList.remove('show'); },3000); }
+  var tTimer; function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tTimer); tTimer=setTimeout(function(){ t.classList.remove('show'); },3000); }
 
   (function(){
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var c=document.getElementById('snow'); if(!c) return; var ctx=c.getContext('2d'), flakes=[], raf;
-    function size(){ c.width=c.offsetWidth; c.height=c.offsetHeight; }
-    function seed(){ flakes=[]; var n=Math.min(70,Math.round(c.width/16)); for(var i=0;i<n;i++){ flakes.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2.4+0.8,s:Math.random()*0.5+0.2,d:Math.random()*0.6-0.3}); } }
-    function draw(){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='rgba(255,255,255,.75)'; for(var i=0;i<flakes.length;i++){ var f=flakes[i]; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.3); ctx.fill(); f.y+=f.s; f.x+=f.d; if(f.y>c.height){ f.y=-5; f.x=Math.random()*c.width; } } raf=requestAnimationFrame(draw); }
-    size(); seed(); draw(); if(reduce){ cancelAnimationFrame(raf); }
-    window.addEventListener('resize', function(){ size(); seed(); });
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    var c=document.getElementById('snow'); if(!c) return; var ctx=c.getContext('2d'),f=[],raf;
+    function sz(){ c.width=c.offsetWidth; c.height=c.offsetHeight; }
+    function sd(){ f=[]; var n=Math.min(70,Math.round(c.width/16)); for(var i=0;i<n;i++) f.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2.4+0.8,s:Math.random()*0.5+0.2,d:Math.random()*0.6-0.3}); }
+    function dr(){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='rgba(255,255,255,.75)'; for(var i=0;i<f.length;i++){var p=f[i];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fill();p.y+=p.s;p.x+=p.d;if(p.y>c.height){p.y=-5;p.x=Math.random()*c.width;}} raf=requestAnimationFrame(dr); }
+    sz(); sd(); dr(); if(reduce) cancelAnimationFrame(raf); addEventListener('resize',function(){ sz(); sd(); });
   })();
 </script>
 </body>

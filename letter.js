@@ -44,6 +44,7 @@ function encodeShare(details, dateStr) {
     a: (details && details.age) || '',
     c: (details && details.city) || '',
     d: (details && details.deed) || '',
+    t: (details && details.template) || '',
     dt: dateStr || ''
   };
   return Buffer.from(JSON.stringify(payload), 'utf8')
