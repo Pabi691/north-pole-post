@@ -363,28 +363,40 @@
   }
   function selectTemplate(id){ state.template=id; buildSwitch(); renderPreview(); }
 
-  function resetPay(){ var b=document.getElementById('pay-btn'); b.disabled = FREE ? false : !ready; b.innerHTML = FREE ? 'Get your card — Free 🎁' : ('Pay <span id="pay-amt">'+rupees(curPrice())+'</span> &amp; Send 🎁'); }
+  function resetPay(){ var b=document.getElementById('pay-btn'); b.disabled = FREE ? false : !ready; b.innerHTML = FREE ? '📲 Share on WhatsApp — Free' : ('Pay <span id="pay-amt">'+rupees(curPrice())+'</span> &amp; Send 🎁'); }
 
   function applyFreeUI(){
-    var pb=document.querySelector('.price-badge'); if(pb) pb.textContent='Free to create & send 🎁';
+    var pb=document.querySelector('.price-badge'); if(pb) pb.textContent='100% free right now 🎁';
     var nr=document.getElementById('not-ready'); if(nr) nr.style.display='none';
     var pl=document.querySelector('.pay-logos'); if(pl) pl.style.display='none';
-    var h=document.querySelector('#send-box h3'); if(h) h.textContent='Get your card 🎁';
-    var p=document.querySelector('#send-box p'); if(p) p.textContent="It's completely free right now! Add your email to also get a copy (optional).";
+    var ef=document.getElementById('f-email'); if(ef){ var fld=ef.closest('.field'); if(fld) fld.style.display='none'; }  // no email step in free mode
+    var fb=document.getElementById('sh-fb'); if(fb) fb.style.display='none';
+    var op=document.getElementById('sh-open'); if(op) op.style.display='none';
+    var h=document.querySelector('#send-box h3'); if(h) h.textContent='Your card is ready 🎁';
+    var p=document.querySelector('#send-box p'); if(p) p.textContent="It's completely free right now — tap below to send it straight to WhatsApp.";
     resetPay();
   }
 
-  function sendCard(){ if(FREE) freeUnlock(); else payAndSend(); }
+  function sendCard(){ if(FREE) freeShareWhatsApp(); else payAndSend(); }
 
-  function freeUnlock(){
-    var email=document.getElementById('f-email').value.trim();
-    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('e-email').hidden=false; return; }
-    document.getElementById('e-email').hidden=true; state.email=email;
-    var b=document.getElementById('pay-btn'); b.disabled=true; b.textContent='Creating your card…';
-    fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})})
-      .then(function(r){ return r.json(); })
-      .then(function(data){ if(data.ok){ unlock(data); } else { toast(data.error||'Could not create.'); resetPay(); } })
-      .catch(function(){ toast('Network error.'); resetPay(); });
+  // Build the shareable link in the browser so WhatsApp can open in the same tap.
+  function b64urlEncode(obj){
+    var json=JSON.stringify(obj), bytes=new TextEncoder().encode(json), bin='';
+    for(var i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function buildShareUrl(L, sk, ct){
+    var payload={ n:L.name, P:L.paragraphs, dt:L.date, em:L.emoji, st:L.senderTitle, sn:L.senderName, dl:L.dateline, bd:L.badge, sk:sk, ct:ct||'globe' };
+    return location.origin + '/letter.html#' + b64urlEncode(payload);
+  }
+  function freeShareWhatsApp(){
+    if(!letterObj){ toast('Make the card first.'); return; }
+    shareUrl = buildShareUrl(letterObj, (SEASON&&SEASON.key)||'christmas', state.template);
+    var who = state.name || 'you';
+    var msg = (letterObj.emoji||'🎁')+' A card for '+who+' — open it (with music 🎶): '+shareUrl;
+    window.open('https://wa.me/?text='+encodeURIComponent(msg), '_blank');   // opens WhatsApp in this tap
+    unlock({ shareUrl: shareUrl, emailed: false });
+    fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})}).catch(function(){});
   }
 
   function payAndSend(){
