@@ -173,7 +173,7 @@ app.get('/api/admin/data', checkAdmin, async function (req, res) {
     const stats = await store.getStats();
     const cfg = await store.getConfig();
     const devices = await store.listDevices();
-    res.json({ stats: stats, config: cfg, devices: devices, freeLimit: FREE_LIMIT, storage: store.useRedis ? 'Upstash (persistent)' : 'local file (resets on restart)' });
+    res.json({ stats: stats, config: cfg, devices: devices, freeLimit: FREE_LIMIT, ready: keysReady, storage: store.useRedis ? 'Upstash (persistent)' : 'local file (resets on restart)' });
   } catch (e) { res.status(500).json({ error: 'Could not load admin data.' }); }
 });
 

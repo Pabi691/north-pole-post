@@ -3,116 +3,181 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin — Letter Shop</title>
+<title>Letter Shop — Admin</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
 <style>
-  :root{ --bg:#0f141c; --card:#19212e; --card2:#131a24; --ink:#e8edf5; --muted:#93a0b4; --line:#27303f; --accent:#f0b43a; --green:#4fb286; --red:#e3756b; --blue:#6aa0ff; color-scheme:dark; }
+  :root{
+    --bg:#0d1220; --panel:#151d2e; --panel2:#1b2436; --tile:#111a29; --ink:#eaf0f8; --muted:#8e9bb3; --line:#263048;
+    --accent:#7c8cff; --green:#46c08a; --amber:#e3b64d; --red:#ec7a6e; --blue:#5f9bff; --violet:#b48cff;
+    color-scheme:dark;
+  }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,sans-serif;line-height:1.5;}
-  .wrap{max-width:900px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left)) 60px;}
+  body{margin:0;background:
+      radial-gradient(900px 500px at 100% -10%, rgba(124,140,255,.10), transparent 60%),
+      radial-gradient(800px 500px at -10% 110%, rgba(70,192,138,.08), transparent 55%), var(--bg);
+    color:var(--ink);font-family:"Nunito",system-ui,sans-serif;line-height:1.5;}
+  .wrap{max-width:980px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left)) 70px;}
   h1,h2,h3{margin:0;font-weight:800;}
   a{color:var(--accent);}
-  .btn{appearance:none;border:0;cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;padding:11px 18px;border-radius:10px;background:var(--accent);color:#2a1d00;}
-  .btn.sec{background:transparent;border:1.5px solid var(--line);color:var(--ink);}
-  .btn.green{background:var(--green);color:#042b1b;}
-  .btn:disabled{opacity:.5;cursor:not-allowed;}
-  input,select,textarea{width:100%;font-family:inherit;font-size:.95rem;padding:10px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);}
-  input[type=color]{padding:3px;height:42px;}
-  textarea{min-height:60px;resize:vertical;}
-  label{display:block;font-size:.82rem;font-weight:700;color:var(--muted);margin:0 0 5px;}
-  .row{display:grid;gap:12px;}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px;}
   .muted{color:var(--muted);}
 
-  /* login */
-  #login{max-width:360px;margin:12vh auto 0;text-align:center;}
-  #login .card{text-align:left;}
+  .btn{appearance:none;border:0;cursor:pointer;font-family:inherit;font-weight:800;font-size:.92rem;padding:10px 16px;border-radius:10px;background:var(--accent);color:#0b1020;transition:filter .15s,transform .1s;text-decoration:none;display:inline-flex;align-items:center;gap:7px;justify-content:center;}
+  .btn:hover{filter:brightness(1.08);} .btn:active{transform:translateY(1px);}
+  .btn.sec{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);}
+  .btn.green{background:var(--green);color:#042013;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  input,select,textarea{width:100%;font-family:inherit;font-size:.95rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0f1829;color:var(--ink);}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent;}
+  input[type=color]{padding:3px;height:42px;cursor:pointer;}
+  textarea{min-height:60px;resize:vertical;}
+  label{display:block;font-size:.8rem;font-weight:700;color:var(--muted);margin:0 0 5px;}
 
-  /* stats */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;}
-  .stat{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
-  .stat .n{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;}
-  .stat .l{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
-  .badge{font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);}
+  /* header */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .brand .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(140deg,var(--accent),#5566e0);display:grid;place-items:center;font-size:1.3rem;box-shadow:0 8px 20px rgba(124,140,255,.35);}
+  .brand h1{font-size:1.25rem;letter-spacing:-.01em;}
+  .brand .sub{font-size:.76rem;color:var(--muted);font-weight:700;}
+  .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+  /* status pills */
+  .status{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+  .pill{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;position:relative;overflow:hidden;}
+  .pill::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);}
+  .pill.green::before{background:var(--green);} .pill.blue::before{background:var(--blue);} .pill.amber::before{background:var(--amber);} .pill.red::before{background:var(--red);} .pill.violet::before{background:var(--violet);}
+  .pill .l{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:800;}
+  .pill .v{font-size:1.02rem;font-weight:800;margin-top:3px;}
+
+  /* cards */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .card-h h2{font-size:1.1rem;display:flex;align-items:center;gap:9px;}
+  .card-h .hint{font-size:.8rem;color:var(--muted);}
+
+  /* stat tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
+  .tile{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:15px 16px;}
+  .tile-top{display:flex;align-items:center;gap:9px;}
+  .tile-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:1rem;flex:none;}
+  .tile-k{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;}
+  .tile-v{font-size:2rem;font-weight:900;letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums;}
+
+  /* two-column controls */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .sub{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:16px;}
+  .sub h3{font-size:1rem;margin-bottom:4px;}
+  .sub p{font-size:.84rem;color:var(--muted);margin:0 0 12px;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .switch{display:flex;align-items:center;gap:10px;font-weight:800;}
+  .switch input{width:auto;transform:scale(1.25);accent-color:var(--green);}
+  .tag{font-size:.78rem;font-weight:800;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);}
+
+  /* devices table */
+  .dev-head{font-size:.84rem;color:var(--muted);margin-bottom:10px;font-weight:700;}
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;font-weight:800;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  td{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;color:var(--muted);}
+
+  /* editor */
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
   .field{margin-bottom:12px;}
   .hint{font-size:.76rem;color:var(--muted);margin-top:5px;}
-  .save-row{display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap;}
-  details summary{cursor:pointer;font-weight:800;margin:6px 0;}
-  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:#122;color:#eafff2;padding:11px 18px;border-radius:99px;font-weight:700;opacity:0;transition:.25s;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+  details{border:1px solid var(--line);border-radius:12px;padding:4px 14px;margin:12px 0;background:#0f1829;}
+  details summary{cursor:pointer;font-weight:800;padding:10px 0;list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:"▸ ";color:var(--accent);}
+  details[open] summary::before{content:"▾ ";}
+  .save-row{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+
+  #login{max-width:380px;margin:14vh auto 0;}
+  #login .logo-big{width:56px;height:56px;border-radius:16px;background:linear-gradient(140deg,var(--accent),#5566e0);display:grid;place-items:center;font-size:1.7rem;margin:0 auto 14px;}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:#0f1829;border:1px solid var(--line);color:#eafff2;padding:12px 20px;border-radius:12px;font-weight:800;opacity:0;transition:.25s;box-shadow:0 12px 34px rgba(0,0,0,.5);z-index:60;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  @media (max-width:620px){ .grid2,.grid3{grid-template-columns:1fr;} }
+
+  @media (max-width:680px){ .cols,.grid2,.grid3{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
-<div id="login">
-  <h1 style="margin-bottom:14px">🎛️ Admin</h1>
+<div id="login" class="wrap">
+  <div class="logo-big">🎛️</div>
+  <h1 style="text-align:center;margin-bottom:6px">Admin sign in</h1>
+  <p class="muted" style="text-align:center;margin-bottom:18px">Manage your Letter Shop</p>
   <div class="card">
     <div class="field">
       <label for="pw">Admin password</label>
       <input id="pw" type="password" placeholder="enter password" onkeydown="if(event.key==='Enter')doLogin()">
-      <div class="hint">Set this with the <b>ADMIN_PASSWORD</b> variable in Render.</div>
+      <div class="hint">Set via the <b>ADMIN_PASSWORD</b> variable in Render.</div>
     </div>
-    <button class="btn" style="width:100%" onclick="doLogin()">Enter</button>
-    <p id="login-err" class="muted" style="color:var(--red);margin-top:10px;display:none">Wrong password.</p>
+    <button class="btn" style="width:100%" onclick="doLogin()">Sign in →</button>
+    <p id="login-err" style="color:var(--red);margin-top:10px;display:none;font-weight:700">Wrong password.</p>
   </div>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dash" class="wrap" hidden>
-  <div class="topbar">
-    <h1>🎛️ Letter Shop · Admin</h1>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <span class="badge" id="storage-badge">storage: —</span>
-      <a class="btn sec" href="/" target="_blank" style="text-decoration:none">View site ↗</a>
+  <div class="top">
+    <div class="brand">
+      <div class="logo">🎛️</div>
+      <div><h1>Letter Shop</h1><div class="sub">Admin dashboard</div></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn sec" onclick="loadDash()">↻ Refresh</button>
+      <a class="btn sec" href="/" target="_blank">View site ↗</a>
       <button class="btn sec" onclick="logout()">Log out</button>
     </div>
   </div>
 
+  <!-- at a glance -->
+  <div class="status" id="status"></div>
+
+  <!-- stats -->
   <div class="card">
-    <h2 style="margin-bottom:12px">📊 Stats</h2>
-    <div class="stats" id="stats"></div>
-    <p class="hint" id="stats-note"></p>
+    <div class="card-h"><h2>📊 Stats</h2><span class="hint">Visitors = page opens · Previews = cards previewed · Paid = purchases</span></div>
+    <div class="tiles" id="stats"></div>
   </div>
 
+  <!-- quick controls -->
   <div class="card">
-    <h2 style="margin-bottom:8px">📱 Devices &amp; free usage</h2>
-    <p class="muted" style="margin-bottom:10px">Each device can make up to <b id="fl">10</b> free cards. Here's the per-device count.</p>
+    <div class="card-h"><h2>🎚️ Quick controls</h2><span class="hint">Your day-to-day switches</span></div>
+    <div class="cols">
+      <div class="sub">
+        <h3>🗓️ Active season</h3>
+        <p>What every visitor sees right now.</p>
+        <div class="row">
+          <select id="active-select" style="flex:1;min-width:150px"></select>
+          <button class="btn green" onclick="saveActive()">Set active</button>
+        </div>
+        <div id="active-current" class="hint" style="margin-top:8px"></div>
+      </div>
+      <div class="sub">
+        <h3>🎁 Free mode</h3>
+        <p>When ON, visitors get cards free (payment hidden). Turn OFF once Razorpay is live.</p>
+        <div class="row" style="justify-content:space-between">
+          <label class="switch"><input type="checkbox" id="free-toggle"> Free for everyone</label>
+          <button class="btn green" onclick="saveFree()">Save</button>
+        </div>
+        <div id="free-current" class="hint" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- devices -->
+  <div class="card">
+    <div class="card-h"><h2>📱 Devices &amp; free usage</h2><span class="hint">Each device gets up to <b id="fl">10</b> free cards</span></div>
     <div id="devices-box"></div>
   </div>
 
+  <!-- season editor -->
   <div class="card">
-    <h2 style="margin-bottom:12px">🗓️ Active season</h2>
-    <p class="muted" style="margin-bottom:10px">This is what visitors see right now. Switch it any time.</p>
-    <div class="save-row">
-      <select id="active-select" style="max-width:260px"></select>
-      <button class="btn green" onclick="saveActive()">Set active</button>
-      <span id="active-current" class="muted"></span>
-    </div>
-  </div>
+    <div class="card-h"><h2>✏️ Edit a season</h2><select id="edit-select" style="max-width:220px" onchange="loadSeasonForm(this.value)"></select></div>
 
-  <div class="card">
-    <h2 style="margin-bottom:8px">🎁 Free mode</h2>
-    <p class="muted" style="margin-bottom:10px">When ON, visitors get their card <b>free</b> (payment is hidden). Turn this OFF once Razorpay is activated and your live keys are in.</p>
-    <div class="save-row">
-      <label style="display:flex;align-items:center;gap:8px;font-weight:800;color:var(--ink)"><input type="checkbox" id="free-toggle" style="width:auto"> Free for everyone</label>
-      <button class="btn green" onclick="saveFree()">Save</button>
-      <span id="free-current" class="muted"></span>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="topbar" style="margin-bottom:12px">
-      <h2>✏️ Edit a season</h2>
-      <select id="edit-select" style="max-width:220px" onchange="loadSeasonForm(this.value)"></select>
-    </div>
-
-    <h3 style="margin:4px 0 10px">Branding</h3>
+    <h3 style="margin:2px 0 12px;font-size:.95rem;color:var(--muted)">BRANDING</h3>
     <div class="grid2">
       <div class="field"><label>Season name</label><input data-path="label"></div>
       <div class="field"><label>Emoji</label><input data-path="emoji"></div>
@@ -123,13 +188,13 @@
       <div class="field"><label>Place (dateline)</label><input data-path="dateline"></div>
       <div class="field"><label>Badge text</label><input data-path="badge"></div>
     </div>
-    <div class="field"><label>Hero headline (you may use &lt;em&gt;…&lt;/em&gt; for the coloured word)</label><input data-path="heroTitle"></div>
+    <div class="field"><label>Hero headline (use &lt;em&gt;…&lt;/em&gt; for the coloured word)</label><input data-path="heroTitle"></div>
     <div class="field"><label>Hero subtext</label><textarea data-path="heroSub"></textarea></div>
-    <div class="field" style="max-width:220px"><label>Price (₹)</label><input id="f-price" type="number" min="1" step="1"></div>
+    <div class="field" style="max-width:200px"><label>Price (₹)</label><input id="f-price" type="number" min="1" step="1"></div>
 
     <details>
       <summary>🎨 Colours &amp; scene</summary>
-      <h3 style="margin:10px 0 8px">Site colours</h3>
+      <h3 style="margin:8px 0 8px;font-size:.9rem;color:var(--muted)">SITE COLOURS</h3>
       <div class="grid3">
         <div class="field"><label>Background</label><input type="color" data-path="colors.bg"></div>
         <div class="field"><label>Cards</label><input type="color" data-path="colors.paper"></div>
@@ -141,7 +206,7 @@
         <div class="field"><label>Accent</label><input type="color" data-path="colors.accent"></div>
         <div class="field"><label>Deep (builder bg)</label><input type="color" data-path="colors.deep"></div>
       </div>
-      <h3 style="margin:10px 0 8px">Cinematic scene</h3>
+      <h3 style="margin:10px 0 8px;font-size:.9rem;color:var(--muted)">CINEMATIC SCENE</h3>
       <div class="grid3">
         <div class="field"><label>Scene colour 1</label><input type="color" data-path="cine.c1"></div>
         <div class="field"><label>Scene colour 2</label><input type="color" data-path="cine.c2"></div>
@@ -154,7 +219,7 @@
 
     <details>
       <summary>📝 Letter wording</summary>
-      <p class="hint">Tokens you can use: <b>{name}</b>, <b>{age}</b>, <b>{city}</b>, <b>{deed}</b>. In the closing line you may also use <b>{cityLine}</b>.</p>
+      <p class="hint" style="margin:6px 0 10px">Tokens: <b>{name}</b>, <b>{age}</b>, <b>{city}</b>, <b>{deed}</b>. In the closing you may also use <b>{cityLine}</b>.</p>
       <div class="field"><label>Greeting</label><input data-path="letter.greeting"></div>
       <div class="field"><label>Opening</label><textarea data-path="letter.intro"></textarea></div>
       <div class="field"><label>When a good deed is given</label><textarea data-path="letter.deed"></textarea></div>
@@ -167,7 +232,7 @@
 
     <div class="save-row">
       <button class="btn green" onclick="saveSeason()">💾 Save this season</button>
-      <span class="hint">Saves immediately — reload the site to see changes.</span>
+      <span class="hint">Saves instantly — reload the site to see changes.</span>
     </div>
   </div>
 </div>
@@ -197,41 +262,68 @@
         DATA=d;
         document.getElementById('login').style.display='none';
         document.getElementById('dash').hidden=false;
-        document.getElementById('storage-badge').textContent='storage: '+d.storage;
+        renderStatus(d);
         renderStats(d.stats);
-        populateSelects();
-        loadFree();
         renderDevices(d.devices || {});
         var flEl=document.getElementById('fl'); if(flEl) flEl.textContent=(d.freeLimit||10);
+        populateSelects();
+        loadFree();
         loadSeasonForm(d.config.active);
       })
       .catch(function(){ PW=''; try{ sessionStorage.removeItem('npp_admin_pw'); }catch(e){} document.getElementById('login').style.display='block'; document.getElementById('dash').hidden=true; });
   }
 
+  function money(paise){ var r=(paise||0)/100; return '₹'+((r%1===0)?r.toFixed(0):r.toFixed(2)); }
+
+  function renderStatus(d){
+    var cfg=d.config, s=(cfg.seasons&&cfg.seasons[cfg.active])||{};
+    var up=(d.storage||'').indexOf('Upstash')>-1;
+    var pills=[
+      { l:'Active season', v:(s.emoji||'')+' '+(s.label||cfg.active), t:'' },
+      { l:'Mode', v: cfg.free ? '🎁 Free (promo)' : '💳 Paid', t: cfg.free?'amber':'green' },
+      { l:'Payments', v: d.ready ? '✅ Ready' : '⚠️ Not activated', t: d.ready?'green':'red' },
+      { l:'Price', v: money(s.pricePaise), t:'blue' },
+      { l:'Storage', v: up?'✅ Upstash':'⚠️ Local file', t: up?'green':'red' }
+    ];
+    document.getElementById('status').innerHTML = pills.map(function(p){
+      return '<div class="pill '+p.t+'"><div class="l">'+p.l+'</div><div class="v">'+p.v+'</div></div>';
+    }).join('');
+  }
+
   function renderStats(s){
     var conv = s.visits ? ((s.purchases/s.visits)*100).toFixed(1)+'%' : '—';
-    var rev = '₹'+((s.revenue||0)/100).toFixed(0);
-    var cards=[['Visitors',s.visits],['Previews made',s.previews],['Letters sold',s.purchases],['Free sends',s.freebies||0],['Conversion',conv],['Revenue',rev]];
-    document.getElementById('stats').innerHTML=cards.map(function(c){ return '<div class="stat"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div></div>'; }).join('');
-    document.getElementById('stats-note').textContent='Visitors = page opens · Previews = letters previewed · Letters sold = paid.';
+    var tiles=[
+      {k:'Visitors', v:s.visits||0, ic:'👀', c:'#5f9bff'},
+      {k:'Previews', v:s.previews||0, ic:'🎬', c:'#7c8cff'},
+      {k:'Paid sales', v:s.purchases||0, ic:'💳', c:'#46c08a'},
+      {k:'Free sends', v:s.freebies||0, ic:'🎁', c:'#e3b64d'},
+      {k:'Conversion', v:conv, ic:'📈', c:'#b48cff'},
+      {k:'Revenue', v:money(s.revenue), ic:'💰', c:'#46c08a'}
+    ];
+    document.getElementById('stats').innerHTML = tiles.map(function(t){
+      return '<div class="tile"><div class="tile-top"><span class="tile-ic" style="background:'+t.c+'22;color:'+t.c+'">'+t.ic+'</span><span class="tile-k">'+t.k+'</span></div><div class="tile-v">'+t.v+'</div></div>';
+    }).join('');
   }
 
   function renderDevices(devices){
     var box=document.getElementById('devices-box'); if(!box) return;
     var entries=Object.keys(devices||{}).map(function(k){ return [k,devices[k]]; }).sort(function(a,b){ return b[1]-a[1]; });
-    if(!entries.length){ box.innerHTML='<p class="muted">No device activity yet.</p>'; return; }
+    if(!entries.length){ box.innerHTML='<p class="muted">No device activity yet. Counts appear here as people make cards.</p>'; return; }
     var totalDevices=entries.length, totalUses=0; entries.forEach(function(e){ totalUses+=e[1]; });
     var lim=(DATA && DATA.freeLimit)||10;
-    var rows=entries.slice(0,60).map(function(e){ var full=e[1]>=lim; return '<tr><td style="font-family:monospace;padding:4px 0">'+e[0].slice(0,16)+'…</td><td style="text-align:right;font-weight:800;color:'+(full?'var(--red)':'var(--ink)')+'">'+e[1]+' / '+lim+(full?' ·full':'')+'</td></tr>'; }).join('');
-    box.innerHTML='<p class="muted" style="margin-bottom:8px">'+totalDevices+' device(s) · '+totalUses+' free cards made</p><div style="max-height:260px;overflow:auto"><table style="width:100%;border-collapse:collapse"><tr><th style="text-align:left;color:var(--muted);font-size:.78rem">Device</th><th style="text-align:right;color:var(--muted);font-size:.78rem">Free uses</th></tr>'+rows+'</table></div>';
+    var rows=entries.slice(0,100).map(function(e){ var full=e[1]>=lim;
+      return '<tr><td class="mono">'+e[0].slice(0,18)+'…</td><td style="text-align:right;font-weight:800;color:'+(full?'var(--red)':'var(--ink)')+'">'+e[1]+' / '+lim+(full?' · full':'')+'</td></tr>'; }).join('');
+    box.innerHTML='<div class="dev-head">'+totalDevices+' device(s) · '+totalUses+' free cards made</div>'+
+      '<div style="max-height:300px;overflow:auto"><table><thead><tr><th>Device</th><th style="text-align:right">Free uses</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
 
   function populateSelects(){
     var keys=Object.keys(DATA.config.seasons);
-    function opts(sel){ return keys.map(function(k){ return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+(DATA.config.seasons[k].label||k)+'</option>'; }).join(''); }
+    function opts(sel){ return keys.map(function(k){ return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+((DATA.config.seasons[k].emoji||'')+' '+(DATA.config.seasons[k].label||k))+'</option>'; }).join(''); }
     document.getElementById('active-select').innerHTML=opts(DATA.config.active);
-    document.getElementById('edit-select').innerHTML=opts(DATA.config.active);
-    document.getElementById('active-current').textContent='Currently: '+((DATA.config.seasons[DATA.config.active]||{}).label||DATA.config.active);
+    document.getElementById('edit-select').innerHTML=opts(editingKey||DATA.config.active);
+    var cur=(DATA.config.seasons[DATA.config.active]||{});
+    document.getElementById('active-current').textContent='Live now: '+((cur.emoji||'')+' '+(cur.label||DATA.config.active));
   }
 
   function getPath(o,p){ return p.split('.').reduce(function(x,k){ return x&&x[k]; }, o); }
@@ -240,14 +332,14 @@
   function loadSeasonForm(key){
     editingKey=key; var s=DATA.config.seasons[key]; if(!s) return;
     document.getElementById('edit-select').value=key;
-    document.querySelectorAll('[data-path]').forEach(function(el){ var v=getPath(s, el.getAttribute('data-path')); el.value = (v==null?'':v); });
-    document.getElementById('f-price').value = ((s.pricePaise||0)/100);
+    document.querySelectorAll('[data-path]').forEach(function(el){ var v=getPath(s, el.getAttribute('data-path')); el.value=(v==null?'':v); });
+    document.getElementById('f-price').value=((s.pricePaise||0)/100);
   }
 
   function saveSeason(){
     var s=JSON.parse(JSON.stringify(DATA.config.seasons[editingKey]));
     document.querySelectorAll('[data-path]').forEach(function(el){ setPath(s, el.getAttribute('data-path'), el.value); });
-    s.pricePaise = Math.round(parseFloat(document.getElementById('f-price').value||'0')*100) || 100;
+    s.pricePaise=Math.round(parseFloat(document.getElementById('f-price').value||'0')*100)||100;
     s.key=editingKey;
     DATA.config.seasons[editingKey]=s;
     saveConfig('Season saved ✅');
@@ -255,17 +347,16 @@
   function saveActive(){
     DATA.config.active=document.getElementById('active-select').value;
     saveConfig('Active season set ✅');
-    document.getElementById('active-current').textContent='Currently: '+((DATA.config.seasons[DATA.config.active]||{}).label||DATA.config.active);
+  }
+  function saveConfig(msg){
+    fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':PW},body:JSON.stringify({config:DATA.config})})
+      .then(function(r){return r.json();}).then(function(d){ if(d.ok){ toast(msg); renderStatus(DATA); populateSelects(); loadSeasonForm(editingKey||DATA.config.active); } else { toast(d.error||'Save failed'); } })
+      .catch(function(){ toast('Network error'); });
   }
 
   function loadFree(){ var t=document.getElementById('free-toggle'); if(t) t.checked=!!DATA.config.free; updateFreeLabel(); }
-  function updateFreeLabel(){ var el=document.getElementById('free-current'); if(el) el.textContent = DATA.config.free ? 'Currently: FREE for everyone 🎁' : 'Currently: paid (₹ shown)'; }
-  function saveFree(){ DATA.config.free = document.getElementById('free-toggle').checked; updateFreeLabel(); saveConfig(DATA.config.free ? 'Free mode ON ✅' : 'Free mode OFF ✅'); }
-  function saveConfig(msg){
-    fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':PW},body:JSON.stringify({config:DATA.config})})
-      .then(function(r){return r.json();}).then(function(d){ if(d.ok){ toast(msg); populateSelects(); loadSeasonForm(editingKey); } else { toast(d.error||'Save failed'); } })
-      .catch(function(){ toast('Network error'); });
-  }
+  function updateFreeLabel(){ var el=document.getElementById('free-current'); if(el) el.textContent = DATA.config.free ? 'Currently: FREE for everyone 🎁' : 'Currently: paid (₹ shown at checkout)'; }
+  function saveFree(){ DATA.config.free=document.getElementById('free-toggle').checked; updateFreeLabel(); renderStatus(DATA); saveConfig(DATA.config.free?'Free mode ON ✅':'Free mode OFF ✅'); }
 
   var tTimer; function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tTimer); tTimer=setTimeout(function(){ t.classList.remove('show'); },2600); }
 </script>
