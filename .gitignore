@@ -1,5 +1,6 @@
 # Never commit your secrets or installed packages
 .env
+data.json
 node_modules/
 npm-debug.log*
 .DS_Store

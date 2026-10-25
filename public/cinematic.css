@@ -8,7 +8,7 @@
   --paper:#fffaf1; --ink:#2b2620; --muted:#6d6456; --line:#e4d8c2; --red:#b23b32; --green:#1c5a40;
   position:relative; width:100%; border-radius:18px; overflow:hidden;
   min-height:clamp(440px,74vh,660px); display:grid; place-items:center;
-  background:#0a1130; isolation:isolate; font-family:"Nunito",system-ui,sans-serif;
+  background:var(--cine-bg, radial-gradient(120% 95% at 50% 0%, #2a4488, #0a1130 72%)); isolation:isolate; font-family:"Nunito",system-ui,sans-serif;
 }
 .cine-particles{position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;}
 .cine-stage{position:relative; z-index:2; width:100%; display:grid; place-items:center; padding:26px 16px;}
@@ -47,7 +47,6 @@
 @keyframes cineLine{to{opacity:1; transform:none;}}
 
 /* ============ GLOBE ============ */
-.cine[data-tpl="globe"]{background:radial-gradient(120% 95% at 50% 0%, #2a4488, #0a1130 70%);}
 .cine[data-tpl="globe"] .cine-frame::before{content:""; position:absolute; inset:-6% -4% -14%; border-radius:50%/46%;
   background:radial-gradient(120% 90% at 35% 25%, rgba(255,255,255,.22), rgba(255,255,255,.04) 45%, transparent 60%);
   box-shadow:inset 0 0 60px rgba(180,210,255,.35), 0 40px 90px rgba(0,0,0,.5); z-index:-1;}
@@ -58,7 +57,6 @@
 @keyframes globeIn{from{transform:scale(.7); opacity:0;}to{transform:scale(1); opacity:1;}}
 
 /* ============ ENVELOPE ============ */
-.cine[data-tpl="envelope"]{background:radial-gradient(120% 95% at 50% 10%, #26406f, #0a1020 72%);}
 .cine[data-tpl="envelope"] .cine-frame{padding-top:30px;}
 .cine[data-tpl="envelope"] .env-pocket{position:absolute; left:-4%; right:-4%; bottom:-7%; height:46%; z-index:5;
   background:linear-gradient(180deg,#f0e3c9,#e2cfa6); border-radius:10px; box-shadow:0 20px 50px rgba(0,0,0,.5);
@@ -73,11 +71,9 @@
 @keyframes cardRise{from{transform:translateY(64%) scale(.96); opacity:.4;}to{transform:translateY(0) scale(1); opacity:1;}}
 
 /* ============ STARS ============ */
-.cine[data-tpl="stars"]{background:linear-gradient(180deg,#060a1a,#0e1636 55%,#111a40);}
 .cine[data-tpl="stars"].play .card{transition-delay:.9s;}
 
 /* ============ FIRE ============ */
-.cine[data-tpl="fire"]{background:radial-gradient(120% 90% at 50% 115%, #5a1e0c, #180a08 72%);}
 .cine[data-tpl="fire"] .card{box-shadow:0 0 70px rgba(255,140,50,.28), 0 30px 70px rgba(0,0,0,.55);}
 .cine[data-tpl="fire"] .fire{position:absolute; left:0; right:0; bottom:0; height:120px; z-index:3; pointer-events:none; overflow:hidden;}
 .cine[data-tpl="fire"] .fire i{position:absolute; bottom:-20px; width:60px; height:120px; border-radius:50% 50% 45% 45%;

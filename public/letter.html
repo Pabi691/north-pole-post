@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>A Letter from Santa 🎅</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎅</text></svg>">
-<meta property="og:title" content="🎅 A Letter from Santa">
-<meta property="og:description" content="Someone sent you a magical letter from Santa — tap to open it, with music!">
+<title>A Letter, Just for You 🎁</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+<meta property="og:title" content="🎁 A letter, just for you">
+<meta property="og:description" content="Someone sent you a magical personalised letter — tap to open it, with music!">
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="cinematic.css">
@@ -43,8 +43,8 @@
 <body>
 
 <div class="overlay" id="overlay">
-  <div class="gift">🎁</div>
-  <h1 id="ov-title">A letter from Santa</h1>
+  <div class="gift" id="ov-emoji">🎁</div>
+  <h1 id="ov-title">A letter, just for you</h1>
   <p id="ov-sub">Someone special sent this to you. Tap to open it — with music! 🎶</p>
   <button class="open-btn" id="ov-open">Open my letter 🎄</button>
 </div>
@@ -59,7 +59,7 @@
       <a id="sh-fb" class="b b-fb" target="_blank" rel="noopener">🔵 Facebook</a>
       <button class="b b-copy" onclick="copyLink()">🔗 Copy link</button>
     </div>
-    <div><a class="b b-make" href="/">✨ Create your own letter from Santa</a></div>
+    <div><a class="b b-make" href="/">✨ Create your own letter</a></div>
   </div>
 </div>
 
@@ -73,45 +73,36 @@
     for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
     return JSON.parse(new TextDecoder().decode(bytes));
   }
-  function cap(s){ s=(s==null?'':String(s)).trim(); return s?s.charAt(0).toUpperCase()+s.slice(1):s; }
-  function buildLetter(d){
-    var name=cap(d.n)||'Friend', age=(d.a==null?'':String(d.a)).trim(), city=cap(d.c), deed=(d.d==null?'':String(d.d)).trim();
-    var p=[]; p.push('Dear '+name+',');
-    p.push('All the way up here at the North Pole, the elves and I have been keeping a close eye on you — and '+name+', I am so proud of you.');
-    if(deed) p.push('I heard that you '+deed+'. That is exactly the kind of kindness that makes your name shine on my Nice List.');
-    else p.push('You have been kind, brave and helpful this year, and your name shines bright on my Nice List.');
-    if(age) p.push('Turning '+age+' is a big deal, you know. Big enough to keep being wonderful, and still small enough to believe in a little Christmas magic.');
-    p.push((city?'The reindeer already know the way to '+city+'. ':'')+'So on Christmas Eve, hang your stocking, leave out a biscuit or two, and get a good night’s sleep. I’ll do the rest.');
-    p.push('Keep being you, '+name+'. Merry Christmas! 🎄');
-    return { name:name, paragraphs:p, date:(d.dt||''), template:(d.t||'globe') };
-  }
 
-  var ok=false, L=null;
+  var ok=false, L=null, theme=null, cineTpl='globe';
   try {
     var hash=location.hash.replace(/^#/,''); if(!hash) throw new Error('no data');
-    L=buildLetter(b64decode(hash)); ok=true;
+    var d=b64decode(hash);
+    L={ name:d.n, paragraphs:d.P||[], date:d.dt||'', emoji:d.em, senderTitle:d.st, senderName:d.sn, dateline:d.dl, badge:d.bd };
+    theme=Cinematic.themeForSeason(d.sk); cineTpl=d.ct||'globe'; ok=true;
   } catch(e){ ok=false; }
 
   if(ok){
-    document.title='A letter from Santa for '+L.name+' 🎅';
-    document.getElementById('ov-title').textContent='A letter from Santa for '+L.name;
+    document.title=(L.emoji||'🎁')+' A letter for '+L.name;
+    document.getElementById('ov-emoji').textContent=L.emoji||'🎁';
+    document.getElementById('ov-title').textContent='A letter for '+L.name;
     var url=location.href;
-    var msg='🎅 A letter from Santa for '+L.name+' — open it (with music 🎶): '+url;
+    var msg=(L.emoji||'🎁')+' A letter for '+L.name+' — open it (with music 🎶): '+url;
     document.getElementById('sh-wa').href='https://wa.me/?text='+encodeURIComponent(msg);
     document.getElementById('sh-fb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url);
 
     document.getElementById('ov-open').addEventListener('click', function(){
       document.getElementById('overlay').classList.add('hide');
-      var page=document.getElementById('page'); page.style.display='block';
-      Cinematic.render(document.getElementById('cine-mount'), L, L.template, { watermark:false });
+      document.getElementById('page').style.display='block';
+      Cinematic.render(document.getElementById('cine-mount'), L, cineTpl, { watermark:false, theme:theme });
       document.getElementById('music').style.display='grid';
-      Cinematic.music.start(); // user gesture
+      Cinematic.music.start();
     });
   } else {
     document.getElementById('overlay').innerHTML =
       '<div class="gift" style="animation:none">🎄</div><h1>This letter link looks broken</h1>'+
       '<p>The link may be incomplete. But you can make a brand new one!</p>'+
-      '<a class="open-btn" href="/">Create a letter from Santa 🎅</a>';
+      '<a class="open-btn" href="/">Create a letter 🎁</a>';
   }
 
   Cinematic.music.onChange(function(p){ var b=document.getElementById('music'); if(b) b.textContent=p?'🔔':'🔇'; });

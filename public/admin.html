@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Letter Shop</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  :root{ --bg:#0f141c; --card:#19212e; --card2:#131a24; --ink:#e8edf5; --muted:#93a0b4; --line:#27303f; --accent:#f0b43a; --green:#4fb286; --red:#e3756b; --blue:#6aa0ff; color-scheme:dark; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,sans-serif;line-height:1.5;}
+  .wrap{max-width:900px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left)) 60px;}
+  h1,h2,h3{margin:0;font-weight:800;}
+  a{color:var(--accent);}
+  .btn{appearance:none;border:0;cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;padding:11px 18px;border-radius:10px;background:var(--accent);color:#2a1d00;}
+  .btn.sec{background:transparent;border:1.5px solid var(--line);color:var(--ink);}
+  .btn.green{background:var(--green);color:#042b1b;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  input,select,textarea{width:100%;font-family:inherit;font-size:.95rem;padding:10px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);}
+  input[type=color]{padding:3px;height:42px;}
+  textarea{min-height:60px;resize:vertical;}
+  label{display:block;font-size:.82rem;font-weight:700;color:var(--muted);margin:0 0 5px;}
+  .row{display:grid;gap:12px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px;}
+  .muted{color:var(--muted);}
+
+  /* login */
+  #login{max-width:360px;margin:12vh auto 0;text-align:center;}
+  #login .card{text-align:left;}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;}
+  .stat{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .stat .n{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;}
+  .stat .l{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .badge{font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .field{margin-bottom:12px;}
+  .hint{font-size:.76rem;color:var(--muted);margin-top:5px;}
+  .save-row{display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+  details summary{cursor:pointer;font-weight:800;margin:6px 0;}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:#122;color:#eafff2;padding:11px 18px;border-radius:99px;font-weight:700;opacity:0;transition:.25s;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  @media (max-width:620px){ .grid2,.grid3{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <h1 style="margin-bottom:14px">🎛️ Admin</h1>
+  <div class="card">
+    <div class="field">
+      <label for="pw">Admin password</label>
+      <input id="pw" type="password" placeholder="enter password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="hint">Set this with the <b>ADMIN_PASSWORD</b> variable in Render.</div>
+    </div>
+    <button class="btn" style="width:100%" onclick="doLogin()">Enter</button>
+    <p id="login-err" class="muted" style="color:var(--red);margin-top:10px;display:none">Wrong password.</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash" class="wrap" hidden>
+  <div class="topbar">
+    <h1>🎛️ Letter Shop · Admin</h1>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="badge" id="storage-badge">storage: —</span>
+      <a class="btn sec" href="/" target="_blank" style="text-decoration:none">View site ↗</a>
+      <button class="btn sec" onclick="logout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:12px">📊 Stats</h2>
+    <div class="stats" id="stats"></div>
+    <p class="hint" id="stats-note"></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:12px">🗓️ Active season</h2>
+    <p class="muted" style="margin-bottom:10px">This is what visitors see right now. Switch it any time.</p>
+    <div class="save-row">
+      <select id="active-select" style="max-width:260px"></select>
+      <button class="btn green" onclick="saveActive()">Set active</button>
+      <span id="active-current" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="topbar" style="margin-bottom:12px">
+      <h2>✏️ Edit a season</h2>
+      <select id="edit-select" style="max-width:220px" onchange="loadSeasonForm(this.value)"></select>
+    </div>
+
+    <h3 style="margin:4px 0 10px">Branding</h3>
+    <div class="grid2">
+      <div class="field"><label>Season name</label><input data-path="label"></div>
+      <div class="field"><label>Emoji</label><input data-path="emoji"></div>
+      <div class="field"><label>Shop name (brand)</label><input data-path="brand"></div>
+      <div class="field"><label>Tagline</label><input data-path="tagline"></div>
+      <div class="field"><label>Character name (signature)</label><input data-path="senderName"></div>
+      <div class="field"><label>Letter header (office)</label><input data-path="senderTitle"></div>
+      <div class="field"><label>Place (dateline)</label><input data-path="dateline"></div>
+      <div class="field"><label>Badge text</label><input data-path="badge"></div>
+    </div>
+    <div class="field"><label>Hero headline (you may use &lt;em&gt;…&lt;/em&gt; for the coloured word)</label><input data-path="heroTitle"></div>
+    <div class="field"><label>Hero subtext</label><textarea data-path="heroSub"></textarea></div>
+    <div class="field" style="max-width:220px"><label>Price (₹)</label><input id="f-price" type="number" min="1" step="1"></div>
+
+    <details>
+      <summary>🎨 Colours &amp; scene</summary>
+      <h3 style="margin:10px 0 8px">Site colours</h3>
+      <div class="grid3">
+        <div class="field"><label>Background</label><input type="color" data-path="colors.bg"></div>
+        <div class="field"><label>Cards</label><input type="color" data-path="colors.paper"></div>
+        <div class="field"><label>Text</label><input type="color" data-path="colors.ink"></div>
+        <div class="field"><label>Muted text</label><input type="color" data-path="colors.muted"></div>
+        <div class="field"><label>Lines/borders</label><input type="color" data-path="colors.line"></div>
+        <div class="field"><label>Primary (buttons)</label><input type="color" data-path="colors.primary"></div>
+        <div class="field"><label>Secondary</label><input type="color" data-path="colors.secondary"></div>
+        <div class="field"><label>Accent</label><input type="color" data-path="colors.accent"></div>
+        <div class="field"><label>Deep (builder bg)</label><input type="color" data-path="colors.deep"></div>
+      </div>
+      <h3 style="margin:10px 0 8px">Cinematic scene</h3>
+      <div class="grid3">
+        <div class="field"><label>Scene colour 1</label><input type="color" data-path="cine.c1"></div>
+        <div class="field"><label>Scene colour 2</label><input type="color" data-path="cine.c2"></div>
+        <div class="field"><label>Scene accent</label><input type="color" data-path="cine.accent"></div>
+        <div class="field"><label>Particles</label>
+          <select data-path="cine.particle"><option>snow</option><option>bats</option><option>confetti</option><option>stars</option><option>embers</option></select>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>📝 Letter wording</summary>
+      <p class="hint">Tokens you can use: <b>{name}</b>, <b>{age}</b>, <b>{city}</b>, <b>{deed}</b>. In the closing line you may also use <b>{cityLine}</b>.</p>
+      <div class="field"><label>Greeting</label><input data-path="letter.greeting"></div>
+      <div class="field"><label>Opening</label><textarea data-path="letter.intro"></textarea></div>
+      <div class="field"><label>When a good deed is given</label><textarea data-path="letter.deed"></textarea></div>
+      <div class="field"><label>When NO deed is given</label><textarea data-path="letter.noDeed"></textarea></div>
+      <div class="field"><label>Age line (used only if age given)</label><textarea data-path="letter.age"></textarea></div>
+      <div class="field"><label>City line (used only if city given)</label><input data-path="letter.cityLine"></div>
+      <div class="field"><label>Closing</label><textarea data-path="letter.closing"></textarea></div>
+      <div class="field"><label>Sign-off</label><input data-path="letter.signoff"></div>
+    </details>
+
+    <div class="save-row">
+      <button class="btn green" onclick="saveSeason()">💾 Save this season</button>
+      <span class="hint">Saves immediately — reload the site to see changes.</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var PW='', DATA=null, editingKey=null;
+
+  try { var saved=sessionStorage.getItem('npp_admin_pw'); if(saved){ PW=saved; } } catch(e){}
+  if(PW) loadDash();
+
+  function doLogin(){
+    var pw=document.getElementById('pw').value;
+    fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})})
+      .then(function(r){return r.json();}).then(function(d){
+        if(d.ok){ PW=pw; try{ sessionStorage.setItem('npp_admin_pw',pw); }catch(e){} loadDash(); }
+        else { document.getElementById('login-err').style.display='block'; }
+      }).catch(function(){ toast('Network error'); });
+  }
+  function logout(){ PW=''; try{ sessionStorage.removeItem('npp_admin_pw'); }catch(e){} location.reload(); }
+
+  function loadDash(){
+    fetch('/api/admin/data',{headers:{'x-admin-password':PW}})
+      .then(function(r){ if(r.status===401){ throw new Error('401'); } return r.json(); })
+      .then(function(d){
+        DATA=d;
+        document.getElementById('login').style.display='none';
+        document.getElementById('dash').hidden=false;
+        document.getElementById('storage-badge').textContent='storage: '+d.storage;
+        renderStats(d.stats);
+        populateSelects();
+        loadSeasonForm(d.config.active);
+      })
+      .catch(function(){ PW=''; try{ sessionStorage.removeItem('npp_admin_pw'); }catch(e){} document.getElementById('login').style.display='block'; document.getElementById('dash').hidden=true; });
+  }
+
+  function renderStats(s){
+    var conv = s.visits ? ((s.purchases/s.visits)*100).toFixed(1)+'%' : '—';
+    var rev = '₹'+((s.revenue||0)/100).toFixed(0);
+    var cards=[['Visitors',s.visits],['Previews made',s.previews],['Letters sold',s.purchases],['Conversion',conv],['Revenue',rev]];
+    document.getElementById('stats').innerHTML=cards.map(function(c){ return '<div class="stat"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div></div>'; }).join('');
+    document.getElementById('stats-note').textContent='Visitors = page opens · Previews = letters previewed · Letters sold = paid.';
+  }
+
+  function populateSelects(){
+    var keys=Object.keys(DATA.config.seasons);
+    function opts(sel){ return keys.map(function(k){ return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+(DATA.config.seasons[k].label||k)+'</option>'; }).join(''); }
+    document.getElementById('active-select').innerHTML=opts(DATA.config.active);
+    document.getElementById('edit-select').innerHTML=opts(DATA.config.active);
+    document.getElementById('active-current').textContent='Currently: '+((DATA.config.seasons[DATA.config.active]||{}).label||DATA.config.active);
+  }
+
+  function getPath(o,p){ return p.split('.').reduce(function(x,k){ return x&&x[k]; }, o); }
+  function setPath(o,p,v){ var ks=p.split('.'),c=o; for(var i=0;i<ks.length-1;i++){ c[ks[i]]=c[ks[i]]||{}; c=c[ks[i]]; } c[ks[ks.length-1]]=v; }
+
+  function loadSeasonForm(key){
+    editingKey=key; var s=DATA.config.seasons[key]; if(!s) return;
+    document.getElementById('edit-select').value=key;
+    document.querySelectorAll('[data-path]').forEach(function(el){ var v=getPath(s, el.getAttribute('data-path')); el.value = (v==null?'':v); });
+    document.getElementById('f-price').value = ((s.pricePaise||0)/100);
+  }
+
+  function saveSeason(){
+    var s=JSON.parse(JSON.stringify(DATA.config.seasons[editingKey]));
+    document.querySelectorAll('[data-path]').forEach(function(el){ setPath(s, el.getAttribute('data-path'), el.value); });
+    s.pricePaise = Math.round(parseFloat(document.getElementById('f-price').value||'0')*100) || 100;
+    s.key=editingKey;
+    DATA.config.seasons[editingKey]=s;
+    saveConfig('Season saved ✅');
+  }
+  function saveActive(){
+    DATA.config.active=document.getElementById('active-select').value;
+    saveConfig('Active season set ✅');
+    document.getElementById('active-current').textContent='Currently: '+((DATA.config.seasons[DATA.config.active]||{}).label||DATA.config.active);
+  }
+  function saveConfig(msg){
+    fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':PW},body:JSON.stringify({config:DATA.config})})
+      .then(function(r){return r.json();}).then(function(d){ if(d.ok){ toast(msg); populateSelects(); loadSeasonForm(editingKey); } else { toast(d.error||'Save failed'); } })
+      .catch(function(){ toast('Network error'); });
+  }
+
+  var tTimer; function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tTimer); tTimer=setTimeout(function(){ t.classList.remove('show'); },2600); }
+</script>
+</body>
+</html>

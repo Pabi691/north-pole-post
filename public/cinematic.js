@@ -1,29 +1,39 @@
 /* Cinematic letter engine — shared by index.html (preview) and letter.html.
-   window.Cinematic.render(mountEl, letter, templateId, {watermark})
-   window.Cinematic.music.toggle()/start()/stop()/isPlaying()/onChange(fn)
-   window.Cinematic.templates  -> [{id,name,...}] */
+   Cinematic.render(mount, letter, templateId, {watermark, theme:{c1,c2,accent,particle}})
+   Cinematic.buildLetter(season, details)  -> letter object (client-side preview)
+   Cinematic.themeForSeason(key)           -> {c1,c2,accent,particle}
+   Cinematic.music.toggle()/start()/stop()/isPlaying()/onChange(fn)
+   Cinematic.templates -> scene shapes */
 (function () {
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   var TEMPLATES = [
-    { id:'globe',    name:'Snow Globe',   emoji:'🔮', particles:'snow-heavy' },
-    { id:'envelope', name:'Envelope',     emoji:'✉️', particles:'snow-light' },
-    { id:'stars',    name:'Starry Night', emoji:'✨', particles:'stars' },
-    { id:'fire',     name:'Fireside',     emoji:'🔥', particles:'embers' }
+    { id:'globe',    name:'Snow Globe', emoji:'🔮' },
+    { id:'envelope', name:'Envelope',   emoji:'✉️' },
+    { id:'stars',    name:'Night Sky',  emoji:'✨' },
+    { id:'fire',     name:'Fireside',   emoji:'🔥' }
   ];
 
+  var SEASON_THEMES = {
+    halloween: { c1:'#3a1d5c', c2:'#0e0a18', accent:'#ff8a3d', particle:'bats' },
+    christmas: { c1:'#2a4488', c2:'#0a1130', accent:'#ffd98a', particle:'snow' },
+    newyear:   { c1:'#20306a', c2:'#06102a', accent:'#f0c860', particle:'confetti' }
+  };
+  var DEFAULT_THEME = SEASON_THEMES.christmas;
+
   function cardHTML(L) {
-    var lines = (L.paragraphs || []).map(function (p, i) {
-      return '<p style="--i:' + i + '">' + esc(p) + '</p>';
-    }).join('');
+    var lines = (L.paragraphs || []).map(function (p, i) { return '<p style="--i:' + i + '">' + esc(p) + '</p>'; }).join('');
     return '' +
-      '<div class="np"><div class="mark">🎅</div><b>Office of Santa Claus</b><small>North Pole · ' + esc(L.date || '') + '</small></div>' +
+      '<div class="np"><div class="mark">' + esc(L.emoji || '🎅') + '</div><b>' + esc(L.senderTitle || 'Office of Santa Claus') + '</b>' +
+      '<small>' + esc(L.dateline || 'North Pole') + ' · ' + esc(L.date || '') + '</small></div>' +
       '<div class="lbody">' + lines + '</div>' +
-      '<div class="sign"><div class="santa">Santa Claus</div><span class="nice">✓ On the Nice List</span></div>';
+      '<div class="sign"><div class="santa">' + esc(L.senderName || 'Santa Claus') + '</div>' +
+      '<span class="nice">✓ ' + esc(L.badge || 'On the Nice List') + '</span></div>';
   }
 
-  /* ---------- particles ---------- */
+  /* ---------- particles (snow / stars / embers / bats / confetti) ---------- */
   var activeParticles = null;
+  var CONFETTI_COLORS = ['#f0c860', '#e8b84b', '#ff7a1a', '#4fb286', '#6aa0ff', '#ff6b9d'];
   function startParticles(canvas, mode) {
     if (activeParticles) { activeParticles.stop(); activeParticles = null; }
     var ctx = canvas.getContext('2d'), raf, items = [], running = true;
@@ -31,23 +41,32 @@
 
     function size() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
     function seed() {
-      items = []; var w = canvas.width, h = canvas.height, n;
+      items = []; var w = canvas.width, h = canvas.height, n, i;
       if (mode === 'stars') n = Math.min(130, Math.round(w / 8));
       else if (mode === 'embers') n = 44;
-      else if (mode === 'snow-heavy') n = Math.min(120, Math.round(w / 8));
+      else if (mode === 'bats') n = Math.min(14, Math.round(w / 60));
+      else if (mode === 'confetti') n = Math.min(90, Math.round(w / 9));
+      else if (mode === 'snow') n = Math.min(120, Math.round(w / 8));
       else n = Math.min(60, Math.round(w / 16));
-      for (var i = 0; i < n; i++) {
-        if (mode === 'stars') items.push({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.6+0.3, tw: Math.random()*6.28, sp: Math.random()*0.045+0.01 });
-        else if (mode === 'embers') items.push({ x: Math.random()*w, y: h+Math.random()*h, r: Math.random()*2+1, s: Math.random()*0.9+0.4, d: Math.random()*0.6-0.3, life: Math.random() });
-        else items.push({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*2.6+0.8, s: Math.random()*0.6+0.25, d: Math.random()*0.7-0.35 });
+      for (i = 0; i < n; i++) {
+        if (mode === 'stars') items.push({ x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.6+0.3, tw:Math.random()*6.28, sp:Math.random()*0.045+0.01 });
+        else if (mode === 'embers') items.push({ x:Math.random()*w, y:h+Math.random()*h, r:Math.random()*2+1, s:Math.random()*0.9+0.4, d:Math.random()*0.6-0.3, life:Math.random() });
+        else if (mode === 'bats') items.push({ x:Math.random()*w, y:Math.random()*h, s:Math.random()*0.5+0.25, d:Math.random()*0.7-0.35, sz:Math.random()*14+16, ph:Math.random()*6.28 });
+        else if (mode === 'confetti') items.push({ x:Math.random()*w, y:Math.random()*h-h, s:Math.random()*1.4+0.8, d:Math.random()*0.8-0.4, rot:Math.random()*6.28, vr:Math.random()*0.2-0.1, col:CONFETTI_COLORS[(Math.random()*CONFETTI_COLORS.length)|0], w:Math.random()*5+4, h:Math.random()*8+5 });
+        else items.push({ x:Math.random()*w, y:Math.random()*h, r:Math.random()*2.6+0.8, s:Math.random()*0.6+0.25, d:Math.random()*0.7-0.35 });
       }
     }
     function draw() {
-      var w = canvas.width, h = canvas.height, i, p; ctx.clearRect(0,0,w,h);
+      var w = canvas.width, h = canvas.height, i, p; ctx.clearRect(0, 0, w, h);
       if (mode === 'stars') {
         for (i=0;i<items.length;i++){ p=items[i]; p.tw+=p.sp; var a=0.35+0.65*Math.abs(Math.sin(p.tw)); ctx.fillStyle='rgba(255,255,255,'+a+')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.28); ctx.fill(); }
       } else if (mode === 'embers') {
         for (i=0;i<items.length;i++){ p=items[i]; ctx.fillStyle='rgba(255,'+Math.round(140+90*p.life)+',60,'+(0.5*p.life+0.15)+')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.28); ctx.fill(); p.y-=p.s; p.x+=p.d; p.life-=0.008; if(p.y<0||p.life<=0){ p.y=h+5; p.x=Math.random()*w; p.life=1; } }
+      } else if (mode === 'bats') {
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        for (i=0;i<items.length;i++){ p=items[i]; p.ph+=0.05; ctx.font=p.sz+'px serif'; ctx.globalAlpha=0.85; ctx.fillText('🦇', p.x, p.y+Math.sin(p.ph)*4); ctx.globalAlpha=1; p.y+=p.s; p.x+=p.d+Math.sin(p.ph)*0.4; if(p.y>h+10){ p.y=-10; p.x=Math.random()*w; } if(p.x<-20)p.x=w+10; if(p.x>w+20)p.x=-10; }
+      } else if (mode === 'confetti') {
+        for (i=0;i<items.length;i++){ p=items[i]; p.rot+=p.vr; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.col; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); p.y+=p.s; p.x+=p.d; if(p.y>h+10){ p.y=-10; p.x=Math.random()*w; } }
       } else {
         ctx.fillStyle='rgba(255,255,255,.82)';
         for (i=0;i<items.length;i++){ p=items[i]; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.28); ctx.fill(); p.y+=p.s; p.x+=p.d; if(p.y>h){ p.y=-5; p.x=Math.random()*w; } }
@@ -63,6 +82,7 @@
   /* ---------- render a scene ---------- */
   function render(mount, L, tplId, opts) {
     opts = opts || {};
+    var theme = opts.theme || DEFAULT_THEME;
     var tpl = null;
     for (var i = 0; i < TEMPLATES.length; i++) if (TEMPLATES[i].id === tplId) tpl = TEMPLATES[i];
     if (!tpl) tpl = TEMPLATES[0];
@@ -79,9 +99,27 @@
       '</div>';
 
     var cine = mount.querySelector('.cine');
-    startParticles(cine.querySelector('.cine-particles'), tpl.particles);
+    cine.style.setProperty('--accent', theme.accent || DEFAULT_THEME.accent);
+    cine.style.setProperty('--cine-bg', 'radial-gradient(120% 95% at 50% 0%, ' + (theme.c1 || DEFAULT_THEME.c1) + ', ' + (theme.c2 || DEFAULT_THEME.c2) + ' 72%)');
+    startParticles(cine.querySelector('.cine-particles'), theme.particle || 'snow');
     requestAnimationFrame(function () { requestAnimationFrame(function () { cine.classList.add('play'); }); });
     return tpl;
+  }
+
+  /* ---------- client-side letter builder (for the free preview) ---------- */
+  function cap(s){ s=(s==null?'':String(s)).trim(); return s?s.charAt(0).toUpperCase()+s.slice(1):s; }
+  function fill(str, d){ return String(str==null?'':str).replace(/\{name\}/g,d.name).replace(/\{age\}/g,d.age).replace(/\{city\}/g,d.city).replace(/\{deed\}/g,d.deed).replace(/\{cityLine\}/g,d.cityLine||''); }
+  function buildLetter(season, details){
+    details = details || {}; var Lt = (season && season.letter) || {};
+    var d = { name:cap(details.name)||'Friend', age:(details.age==null?'':String(details.age)).trim(), city:cap(details.city), deed:(details.deed==null?'':String(details.deed)).trim() };
+    var p=[]; p.push(fill(Lt.greeting,d)); p.push(fill(Lt.intro,d));
+    p.push(d.deed?fill(Lt.deed,d):fill(Lt.noDeed,d));
+    if(d.age) p.push(fill(Lt.age,d));
+    var cityLine = d.city ? fill(Lt.cityLine,d) : '';
+    p.push(fill(Lt.closing, Object.assign({},d,{cityLine:cityLine})));
+    p.push(fill(Lt.signoff,d));
+    var date=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+    return { name:d.name, paragraphs:p, date:date, emoji:season.emoji, senderName:season.senderName, senderTitle:season.senderTitle, dateline:season.dateline, badge:season.badge };
   }
 
   /* ---------- music: gentle synth of "Jingle Bells" (public domain) ---------- */
@@ -95,9 +133,7 @@
       M.forEach(function (nd) {
         var f = FREQ[nd[0]], dur = nd[1]*beat, o = actx.createOscillator(), g = actx.createGain();
         o.type = 'triangle'; o.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.15, t + 0.03);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + dur*0.92);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.15, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur*0.92);
         o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur); t += dur;
       });
       timer = setTimeout(function () { if (playing) once(); }, (t - actx.currentTime + 0.5) * 1000);
@@ -109,5 +145,8 @@
     return { start: start, stop: stop, toggle: toggle, isPlaying: function () { return playing; }, onChange: function (f) { cb = f; } };
   })();
 
-  window.Cinematic = { templates: TEMPLATES, render: render, music: music };
+  window.Cinematic = {
+    templates: TEMPLATES, render: render, music: music, buildLetter: buildLetter,
+    themeForSeason: function (k) { return SEASON_THEMES[k] || DEFAULT_THEME; }
+  };
 })();
