@@ -8,7 +8,6 @@ function cap(s) {
 }
 
 // Build the personalised letter from the form details.
-// Returns a plain object the frontend and the email both render.
 function buildLetter(d) {
   d = d || {};
   const name = cap(d.name) || 'Friend';
@@ -37,13 +36,39 @@ function buildLetter(d) {
   return { name, paragraphs: p, refCode, date };
 }
 
+// Pack the letter details into a short, URL-safe string for the shareable link.
+// The share page (letter.html) decodes this — no database needed.
+function encodeShare(details, dateStr) {
+  const payload = {
+    n: (details && details.name) || '',
+    a: (details && details.age) || '',
+    c: (details && details.city) || '',
+    d: (details && details.deed) || '',
+    dt: dateStr || ''
+  };
+  return Buffer.from(JSON.stringify(payload), 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
 // A festive HTML email version of the same letter.
-function letterEmailHtml(details, letter) {
+function letterEmailHtml(details, letter, shareUrl) {
   const body = letter.paragraphs
     .map(function (line) {
       return '<p style="margin:0 0 14px;font-size:18px;line-height:1.7;color:#2b2620;">' + escapeHtml(line) + '</p>';
     })
     .join('');
+
+  const shareBlock = shareUrl
+    ? [
+        '    <div style="text-align:center;padding:4px 30px 22px;">',
+        '      <a href="' + escapeHtml(shareUrl) + '" style="display:inline-block;background:#b23b32;color:#fff6ea;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;padding:13px 24px;border-radius:999px;">🎁 Open &amp; share this letter</a>',
+        '      <div style="font-family:Arial,sans-serif;font-size:12px;color:#6d6456;margin-top:9px;">Send it on WhatsApp or Facebook — it opens with music and a festive theme 🎶</div>',
+        '    </div>'
+      ].join('\n')
+    : '';
 
   return [
     '<div style="background:#f7f0e4;padding:28px 12px;font-family:Georgia,\'Times New Roman\',serif;">',
@@ -54,16 +79,17 @@ function letterEmailHtml(details, letter) {
     '      <div style="font-family:Arial,sans-serif;font-size:11px;color:#6d6456;letter-spacing:1px;">North Pole &middot; ' + escapeHtml(letter.date) + '</div>',
     '    </div>',
     '    <div style="padding:14px 30px 10px;">' + body + '</div>',
-    '    <div style="padding:0 30px 26px;">',
+    '    <div style="padding:0 30px 20px;">',
     '      <div style="font-size:26px;color:#b23b32;font-family:\'Brush Script MT\',cursive;">Santa Claus</div>',
     '      <div style="display:inline-block;margin-top:8px;font-family:Arial,sans-serif;font-weight:bold;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#1c5a40;border:1.5px solid #1c5a40;border-radius:99px;padding:5px 12px;">✓ On the Nice List</div>',
     '    </div>',
+    shareBlock,
     '    <div style="background:#1c5a40;color:#eef7f0;text-align:center;padding:14px;font-family:Arial,sans-serif;font-size:12px;">',
     '      Share the magic with code <b>' + escapeHtml(letter.refCode) + '</b> &mdash; your friends get ₹20 off.',
     '    </div>',
     '  </div>',
-    '</div>',
-  ].join('\n');
+    '</div>'
+  ].filter(Boolean).join('\n');
 }
 
 function escapeHtml(s) {
@@ -74,4 +100,4 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-module.exports = { buildLetter, letterEmailHtml };
+module.exports = { buildLetter, letterEmailHtml, encodeShare };

@@ -123,6 +123,8 @@
   .share{margin-top:26px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px;}
   .share h3{font-size:1.25rem;}
   .share p{color:var(--muted);margin-top:6px;font-size:.95rem;}
+  .share-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+  .share-btns .btn{padding:12px 20px;font-size:.95rem;text-decoration:none;text-align:center;}
   .ref{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
   .ref code{flex:1;min-width:160px;background:var(--bg);border:1.5px dashed var(--gold);border-radius:12px;padding:12px 16px;font-family:var(--font-ui);font-weight:800;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--green-deep);color:#eef7f0;padding:12px 20px;border-radius:99px;font-weight:700;opacity:0;transition:.25s;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.3);}
@@ -250,12 +252,18 @@
         <div class="sign"><div class="santa">Santa Claus</div><span class="nice">✓ On the Nice List</span></div>
       </div>
       <div class="share">
-        <h3>Love it? Share the magic 🎁</h3>
-        <p>Send North Pole Post to a friend. When they order with your code, <b>they get ₹20 off</b> — and so do you on your next letter.</p>
-        <div class="ref">
-          <code id="ref-code">—<button class="btn" style="padding:4px 10px;font-size:.8rem;background:var(--green);color:#fff" onclick="copyRef()">Copy</button></code>
-          <button class="btn btn-ghost" onclick="toast('Tip: share your code on WhatsApp family groups ✉️')">Share</button>
+        <h3>Share this letter 🎁</h3>
+        <p>Send it to family &amp; friends — it opens with festive music 🎶 and a surprise theme. Each share also invites them to make their own.</p>
+        <div class="share-btns">
+          <a id="sh-wa" class="btn btn-green" target="_blank" rel="noopener">🟢 WhatsApp</a>
+          <a id="sh-fb" class="btn" style="background:#1877f2;color:#fff" target="_blank" rel="noopener">🔵 Facebook</a>
+          <a id="sh-open" class="btn btn-ghost" target="_blank" rel="noopener">Open letter ↗</a>
+          <button id="sh-copy" class="btn btn-ghost" onclick="copyShare()">Copy link</button>
         </div>
+        <div class="ref" style="margin-top:18px">
+          <code id="ref-code">— <button class="btn" style="padding:4px 10px;font-size:.8rem;background:var(--green);color:#fff" onclick="copyRef()">Copy</button></code>
+        </div>
+        <p style="font-size:.82rem;color:var(--muted);margin-top:8px">🎟️ Your referral code — friends get ₹20 off, and so do you.</p>
       </div>
       <div class="nav-row" style="max-width:640px;margin:22px auto 0"><button class="btn btn-ghost" style="color:#fdf6e7;border-color:rgba(255,255,255,.3)" onclick="restart()">Make another letter</button></div>
     </div>
@@ -279,6 +287,7 @@
 <script>
   var state = { name:'', age:'', city:'', deed:'', email:'' };
   var cfg = { keyId:'', pricePaise:100, currency:'INR', ready:false };
+  var shareUrl = '';
 
   function rupees(paise){ return '₹' + (paise/100).toFixed(paise % 100 === 0 ? 0 : 2); }
 
@@ -362,6 +371,7 @@
       .then(function(data){
         if(data.ok){
           renderLetter(data.letter);
+          setupShare(data.shareUrl);
           document.getElementById('email-note').textContent = data.emailed
             ? ('We’ve also emailed a copy to ' + state.email + '.')
             : 'Tip: set up email in .env to auto-send a copy.';
@@ -378,6 +388,23 @@
       return '<p>' + p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>';
     }).join('');
     document.getElementById('ref-code').childNodes[0].nodeValue = L.refCode + ' ';
+  }
+
+  function setupShare(url){
+    shareUrl = url || '';
+    var who = state.name || 'your child';
+    var msg = '🎅 I got a letter from Santa for ' + who + '! Open it (with music 🎶): ' + shareUrl;
+    var wa = document.getElementById('sh-wa'), fb = document.getElementById('sh-fb'), op = document.getElementById('sh-open');
+    if(wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    if(fb) fb.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+    if(op) op.href = shareUrl;
+  }
+
+  function copyShare(){
+    if(!shareUrl){ toast('Link not ready yet'); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(shareUrl).then(function(){ toast('Link copied! 🎁'); }, function(){ toast(shareUrl); });
+    } else { toast(shareUrl); }
   }
 
   function copyRef(){

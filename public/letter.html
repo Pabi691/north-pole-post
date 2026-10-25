@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Letter from Santa 🎅</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎅</text></svg>">
+<meta property="og:title" content="🎅 A Letter from Santa">
+<meta property="og:description" content="Someone sent you a magical letter from Santa — tap to open it, with music!">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  :root{
+    --accent:#ffd98a; --paper:#fffaf1; --ink:#2b2620; --muted:#6d6456; --line:#e4d8c2; --red:#b23b32; --green:#1c5a40;
+    --font-display:"Fraunces",Georgia,serif; --font-letter:"Cormorant Garamond",Georgia,serif; --font-ui:"Nunito",system-ui,sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;}
+  body{background:#0a1130;color:#fff;font-family:var(--font-ui);line-height:1.6;overflow-x:hidden;transition:background .8s ease;}
+  #snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+  .page{position:relative;z-index:2;max-width:640px;margin:0 auto;padding:clamp(18px,5vw,40px) max(16px,env(safe-area-inset-left,0px)) 60px;padding-right:max(16px,env(safe-area-inset-right,0px));}
+
+  /* Intro / reveal overlay */
+  .overlay{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:rgba(6,10,26,.78);backdrop-filter:blur(3px);transition:opacity .5s ease;}
+  .overlay.hide{opacity:0;pointer-events:none;}
+  .gift{font-size:clamp(4rem,18vw,7rem);filter:drop-shadow(0 10px 30px rgba(0,0,0,.5));animation:bob 2.4s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-12px) rotate(2deg);}}
+  .overlay h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.6rem,6vw,2.4rem);margin:16px 0 6px;color:#fff;text-wrap:balance;}
+  .overlay p{color:#d8def0;max-width:34ch;margin:0 0 24px;}
+  .open-btn{font-family:var(--font-ui);font-weight:800;font-size:1.15rem;border:0;cursor:pointer;color:#3a1200;background:linear-gradient(180deg,#ffe08a,#f0b43a);padding:16px 34px;border-radius:999px;box-shadow:0 12px 30px rgba(240,180,58,.45);animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+
+  .theme-badge{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#0e1630;background:var(--accent);padding:7px 14px;border-radius:999px;margin-bottom:16px;}
+
+  /* The letter card */
+  .letter{position:relative;background:
+      repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(187,140,43,.14) 32px),var(--paper);
+    color:var(--ink);border:1px solid var(--line);border-top:6px solid var(--red);border-radius:8px;
+    padding:clamp(24px,6vw,48px);box-shadow:0 30px 70px rgba(0,0,0,.5);font-family:var(--font-letter);}
+  .np{text-align:center;margin-bottom:18px;}
+  .np .mark{font-size:2.2rem;}
+  .np b{display:block;font-family:var(--font-display);letter-spacing:.14em;text-transform:uppercase;font-size:.78rem;color:var(--red);margin-top:4px;}
+  .np small{color:var(--muted);font-family:var(--font-ui);letter-spacing:.1em;}
+  .lbody{font-size:clamp(1.18rem,3vw,1.5rem);line-height:1.8;}
+  .lbody p{margin:0 0 15px;}
+  .sign{margin-top:22px;}
+  .sign .santa{font-size:2.2rem;color:var(--red);line-height:1;}
+  .nice{display:inline-block;margin-top:10px;font-family:var(--font-ui);font-weight:800;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);border:1.5px solid var(--green);border-radius:99px;padding:6px 14px;transform:rotate(-4deg);}
+
+  .actions{margin-top:30px;text-align:center;}
+  .actions h3{font-family:var(--font-display);color:#fff;font-size:1.3rem;margin:0 0 4px;}
+  .actions p{color:#cfd6ea;font-size:.92rem;margin:0 0 16px;}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .btn{font-family:var(--font-ui);font-weight:800;font-size:.98rem;border:0;cursor:pointer;text-decoration:none;padding:13px 22px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;transition:transform .12s ease;}
+  .btn:hover{transform:translateY(-2px);}
+  .btn-wa{background:#25d366;color:#05331a;}
+  .btn-fb{background:#1877f2;color:#fff;}
+  .btn-copy{background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.3);}
+  .btn-make{margin-top:22px;background:linear-gradient(180deg,#ffe08a,#f0b43a);color:#3a1200;font-size:1.05rem;padding:15px 30px;}
+
+  /* Floating music toggle */
+  .music{position:fixed;z-index:15;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    width:56px;height:56px;border-radius:50%;border:0;cursor:pointer;background:var(--accent);color:#2a1a00;font-size:1.5rem;
+    box-shadow:0 10px 26px rgba(0,0,0,.4);display:grid;place-items:center;}
+  .music.playing{animation:spin 6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .err{text-align:center;color:#fff;padding-top:12vh;}
+  .err .gift{animation:none;}
+  @media (prefers-reduced-motion:reduce){.gift,.open-btn,.music.playing{animation:none;}}
+</style>
+</head>
+<body>
+<canvas id="snow"></canvas>
+
+<!-- Reveal overlay -->
+<div class="overlay" id="overlay">
+  <div class="gift" id="ov-emoji">🎁</div>
+  <h1 id="ov-title">A letter from Santa</h1>
+  <p id="ov-sub">Someone special sent this to you. Tap to open it — with music! 🎶</p>
+  <button class="open-btn" id="ov-open">Open my letter 🎄</button>
+</div>
+
+<!-- Letter -->
+<div class="page" id="page" style="display:none">
+  <div style="text-align:center"><span class="theme-badge" id="theme-badge">✶ A Santa Letter</span></div>
+  <div class="letter">
+    <div class="np"><div class="mark">🎅</div><b>Office of Santa Claus</b><small id="l-date">North Pole</small></div>
+    <div class="lbody" id="l-body"></div>
+    <div class="sign"><div class="santa">Santa Claus</div><span class="nice">✓ On the Nice List</span></div>
+  </div>
+
+  <div class="actions">
+    <h3>Pass on the magic 🎁</h3>
+    <p>Share this letter with someone who'd smile.</p>
+    <div class="btns">
+      <a id="sh-wa" class="btn btn-wa" target="_blank" rel="noopener">🟢 WhatsApp</a>
+      <a id="sh-fb" class="btn btn-fb" target="_blank" rel="noopener">🔵 Facebook</a>
+      <button class="btn btn-copy" onclick="copyLink()">🔗 Copy link</button>
+    </div>
+    <div><a class="btn btn-make" href="/">✨ Create your own letter from Santa</a></div>
+  </div>
+</div>
+
+<button class="music" id="music" title="Play / pause music" aria-label="Play or pause music" style="display:none">🔔</button>
+
+<script>
+  /* ---------- decode the letter from the link ---------- */
+  function b64decode(str){
+    str = String(str).replace(/-/g,'+').replace(/_/g,'/');
+    while(str.length % 4) str += '=';
+    var bin = atob(str), bytes = new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+  function cap(s){ s=(s==null?'':String(s)).trim(); return s?s.charAt(0).toUpperCase()+s.slice(1):s; }
+
+  function buildLetter(d){
+    var name=cap(d.n)||'Friend', age=(d.a==null?'':String(d.a)).trim(), city=cap(d.c), deed=(d.d==null?'':String(d.d)).trim();
+    var p=[];
+    p.push('Dear '+name+',');
+    p.push('All the way up here at the North Pole, the elves and I have been keeping a close eye on you — and '+name+', I am so proud of you.');
+    if(deed) p.push('I heard that you '+deed+'. That is exactly the kind of kindness that makes your name shine on my Nice List.');
+    else p.push('You have been kind, brave and helpful this year, and your name shines bright on my Nice List.');
+    if(age) p.push('Turning '+age+' is a big deal, you know. Big enough to keep being wonderful, and still small enough to believe in a little Christmas magic.');
+    p.push((city?'The reindeer already know the way to '+city+'. ':'')+'So on Christmas Eve, hang your stocking, leave out a biscuit or two, and get a good night’s sleep. I’ll do the rest.');
+    p.push('Keep being you, '+name+'. Merry Christmas! 🎄');
+    return { name:name, paragraphs:p, date:(d.dt||'') };
+  }
+
+  var THEMES = [
+    { name:'Starry Night',   bg:'radial-gradient(120% 90% at 50% -10%, #2a4488, #0a1130 70%)', accent:'#ffd98a' },
+    { name:'Cosy Fireside',  bg:'radial-gradient(120% 95% at 50% 115%, #8a3016, #1b0c09 72%)', accent:'#ff9a52' },
+    { name:'Winter Forest',  bg:'radial-gradient(120% 90% at 50% -10%, #14543a, #05140e 72%)', accent:'#8fe9bd' },
+    { name:'Midnight Magic', bg:'radial-gradient(120% 90% at 50% -10%, #432770, #0e0a1f 72%)', accent:'#e6a8ff' }
+  ];
+  function pickTheme(seed){ var h=5381; for(var i=0;i<seed.length;i++){ h=((h<<5)+h+seed.charCodeAt(i))>>>0; } return THEMES[h % THEMES.length]; }
+
+  var ok=false, L=null;
+  try {
+    var hash = location.hash.replace(/^#/,'');
+    if(!hash) throw new Error('no data');
+    var data = b64decode(hash);
+    L = buildLetter(data);
+    ok = true;
+  } catch(e){ ok=false; }
+
+  if(ok){
+    var theme = pickTheme((L.name||'') + (L.paragraphs[2]||''));
+    document.documentElement.style.setProperty('--accent', theme.accent);
+    document.body.style.background = theme.bg;
+    document.getElementById('theme-badge').textContent = '✶ ' + theme.name;
+
+    document.title = 'A letter from Santa for ' + L.name + ' 🎅';
+    document.getElementById('ov-title').textContent = 'A letter from Santa for ' + L.name;
+    document.getElementById('l-date').textContent = 'North Pole · ' + (L.date || '');
+    document.getElementById('l-body').innerHTML = L.paragraphs.map(function(t){
+      return '<p>'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
+    }).join('');
+
+    // share buttons point at THIS page
+    var url = location.href;
+    var msg = '🎅 A letter from Santa for ' + L.name + ' — open it (with music 🎶): ' + url;
+    document.getElementById('sh-wa').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    document.getElementById('sh-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+  } else {
+    document.getElementById('overlay').innerHTML =
+      '<div class="err"><div class="gift">🎄</div><h1>This letter link looks broken</h1>' +
+      '<p style="color:#d8def0">The link may be incomplete. But you can make a brand new one!</p>' +
+      '<a class="open-btn" href="/" style="text-decoration:none;display:inline-block;margin-top:18px">Create a letter from Santa 🎅</a></div>';
+  }
+
+  /* ---------- reveal ---------- */
+  document.getElementById('ov-open') && document.getElementById('ov-open').addEventListener('click', function(){
+    document.getElementById('overlay').classList.add('hide');
+    document.getElementById('page').style.display = 'block';
+    document.getElementById('music').style.display = 'grid';
+    startMusic(); // user gesture — audio allowed
+  });
+
+  function copyLink(){
+    var url = location.href;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ flash('Link copied! 🎁'); }, function(){ prompt('Copy this link:', url); });
+    } else { prompt('Copy this link:', url); }
+  }
+  function flash(t){ var b=document.querySelector('.btn-copy'); if(!b) return; var o=b.innerHTML; b.innerHTML=t; setTimeout(function(){ b.innerHTML=o; },1800); }
+
+  /* ---------- music: a gentle synth of "Jingle Bells" (public domain) ---------- */
+  var FREQ={C:261.63,D:293.66,E:329.63,F:349.23,G:392.00,A:440,B:493.88,H:523.25};
+  var MELODY=[
+    ['E',1],['E',1],['E',2], ['E',1],['E',1],['E',2],
+    ['E',1],['G',1],['C',1.5],['D',0.5],['E',3],
+    ['F',1],['F',1],['F',1.5],['F',0.5],['F',1],['E',1],['E',0.5],['E',0.5],
+    ['E',1],['D',1],['D',1],['E',1],['D',2],['G',2]
+  ];
+  var actx=null, playing=false, timer=null;
+  function playOnce(){
+    if(!actx) return;
+    var beat=0.34, t=actx.currentTime+0.06;
+    for(var i=0;i<MELODY.length;i++){
+      var f=FREQ[MELODY[i][0]], dur=MELODY[i][1]*beat;
+      var o=actx.createOscillator(), g=actx.createGain();
+      o.type='triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.16,t+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur*0.92);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t); o.stop(t+dur);
+      t+=dur;
+    }
+    var total=(t-actx.currentTime+0.5)*1000;
+    timer=setTimeout(function(){ if(playing) playOnce(); }, total);
+  }
+  function startMusic(){
+    try{
+      if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state==='suspended') actx.resume();
+      if(!playing){ playing=true; playOnce(); setMusicBtn(); }
+    }catch(e){}
+  }
+  function stopMusic(){ playing=false; if(timer) clearTimeout(timer); setMusicBtn(); }
+  function setMusicBtn(){ var b=document.getElementById('music'); if(!b) return; b.textContent=playing?'🔔':'🔇'; b.classList.toggle('playing',playing); }
+  document.getElementById('music').addEventListener('click', function(){ playing?stopMusic():startMusic(); });
+
+  /* ---------- snow ---------- */
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    var c=document.getElementById('snow'); if(!c) return; var ctx=c.getContext('2d'), flakes=[], raf;
+    function size(){ c.width=innerWidth; c.height=innerHeight; }
+    function seed(){ flakes=[]; var n=Math.min(90,Math.round(innerWidth/12)); for(var i=0;i<n;i++){ flakes.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2.6+0.8,s:Math.random()*0.6+0.25,d:Math.random()*0.7-0.35}); } }
+    function draw(){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='rgba(255,255,255,.8)'; for(var i=0;i<flakes.length;i++){ var f=flakes[i]; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.3); ctx.fill(); f.y+=f.s; f.x+=f.d; if(f.y>c.height){ f.y=-5; f.x=Math.random()*c.width; } } raf=requestAnimationFrame(draw); }
+    size(); seed(); draw(); if(reduce) cancelAnimationFrame(raf);
+    addEventListener('resize', function(){ size(); seed(); });
+  })();
+</script>
+</body>
+</html>

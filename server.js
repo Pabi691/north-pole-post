@@ -13,7 +13,7 @@ const crypto = require('crypto');
 const express = require('express');
 const Razorpay = require('razorpay');
 const nodemailer = require('nodemailer');
-const { buildLetter, letterEmailHtml } = require('./letter');
+const { buildLetter, letterEmailHtml, encodeShare } = require('./letter');
 
 const app = express();
 app.use(express.json());
@@ -86,18 +86,23 @@ app.post('/api/verify', async function (req, res) {
     // Paid for real — now (and only now) create the letter.
     const letter = buildLetter(details);
 
+    // Build the public shareable link (details packed into the URL — no database).
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+    const host = req.headers.host;
+    const shareUrl = host ? (proto + '://' + host + '/letter.html#' + encodeShare(details, letter.date)) : '';
+
     // Try to email it. If email isn't set up, we still deliver on screen.
     let emailed = false;
     if (details.email) {
       try {
-        await sendLetterEmail(details.email, details, letter);
+        await sendLetterEmail(details.email, details, letter, shareUrl);
         emailed = true;
       } catch (mailErr) {
         console.error('email failed:', mailErr && mailErr.message ? mailErr.message : mailErr);
       }
     }
 
-    res.json({ ok: true, letter, emailed, paymentId: razorpay_payment_id });
+    res.json({ ok: true, letter, emailed, shareUrl, paymentId: razorpay_payment_id });
   } catch (e) {
     console.error('verify failed:', e && e.message ? e.message : e);
     res.status(500).json({ error: 'Something went wrong after payment. Your money is safe — contact support.' });
@@ -119,14 +124,14 @@ function getTransporter() {
   return transporter;
 }
 
-async function sendLetterEmail(to, details, letter) {
+async function sendLetterEmail(to, details, letter, shareUrl) {
   const t = getTransporter();
   if (!t) throw new Error('SMTP not configured');
   await t.sendMail({
     from: process.env.MAIL_FROM || ('North Pole Post <' + process.env.SMTP_USER + '>'),
     to: to,
     subject: '🎅 A letter from Santa for ' + (letter.name || 'your child'),
-    html: letterEmailHtml(details, letter),
+    html: letterEmailHtml(details, letter, shareUrl),
   });
 }
 
