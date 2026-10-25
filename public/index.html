@@ -35,7 +35,34 @@
   .hero{position:relative;overflow:hidden;background:
       radial-gradient(120% 90% at 85% -10%,color-mix(in srgb,var(--green) 22%,transparent),transparent 60%),
       radial-gradient(90% 80% at -5% 110%,color-mix(in srgb,var(--red) 16%,transparent),transparent 55%);}
-  #snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  .hero-sky{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+  #hero-amb{position:absolute;inset:0;width:100%;height:100%;}
+  .moon{position:absolute;top:7%;right:11%;width:clamp(70px,10vw,120px);height:clamp(70px,10vw,120px);border-radius:50%;
+    background:radial-gradient(circle at 38% 36%, color-mix(in srgb,var(--gold) 92%,#fff), color-mix(in srgb,var(--gold) 65%,#000) 72%);
+    box-shadow:0 0 60px 8px color-mix(in srgb,var(--gold) 50%,transparent), 0 0 140px 40px color-mix(in srgb,var(--gold) 22%,transparent);opacity:.9;}
+  .moon::after{content:"";position:absolute;inset:0;border-radius:50%;opacity:.4;
+    background:radial-gradient(circle at 64% 58%, color-mix(in srgb,var(--gold) 55%,#000) 9%, transparent 10%),
+               radial-gradient(circle at 38% 68%, color-mix(in srgb,var(--gold) 55%,#000) 6%, transparent 7%),
+               radial-gradient(circle at 55% 32%, color-mix(in srgb,var(--gold) 55%,#000) 5%, transparent 6%);}
+  .fog{position:absolute;left:0;right:0;bottom:-50px;height:230px;}
+  .fog i{position:absolute;bottom:0;width:65%;height:210px;border-radius:50%;filter:blur(34px);opacity:.5;animation:drift 20s ease-in-out infinite;
+    background:radial-gradient(ellipse at center, color-mix(in srgb,var(--red) 32%,transparent), transparent 70%);}
+  .fog i:nth-child(2){left:28%;animation-duration:26s;animation-delay:-7s;background:radial-gradient(ellipse at center, color-mix(in srgb,var(--gold) 24%,transparent), transparent 70%);}
+  .fog i:nth-child(3){left:-12%;animation-duration:32s;animation-delay:-14s;}
+  @keyframes drift{0%,100%{transform:translateX(-7%);}50%{transform:translateX(11%);}}
+  .vignette{position:absolute;inset:0;background:radial-gradient(125% 95% at 50% 28%, transparent 52%, rgba(0,0,0,.5));}
+  .hero h1 em{text-shadow:0 0 20px color-mix(in srgb,var(--red) 55%,transparent);animation:glow 3.2s ease-in-out infinite;}
+  @keyframes glow{0%,100%{text-shadow:0 0 18px color-mix(in srgb,var(--red) 45%,transparent);}50%{text-shadow:0 0 34px color-mix(in srgb,var(--red) 85%,transparent);}}
+  .hero-copy > *{opacity:0;transform:translateY(16px);animation:heroIn .7s cubic-bezier(.2,.8,.2,1) forwards;}
+  .hero-copy > *:nth-child(1){animation-delay:.15s;} .hero-copy > *:nth-child(2){animation-delay:.3s;}
+  .hero-copy > *:nth-child(3){animation-delay:.45s;} .hero-copy > *:nth-child(4){animation-delay:.6s;} .hero-copy > *:nth-child(5){animation-delay:.75s;}
+  @keyframes heroIn{to{opacity:1;transform:none;}}
+  .sound-fab{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;gap:8px;}
+  .sound-fab .hint{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 13px;font-size:.82rem;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap;}
+  .sound-fab button{width:54px;height:54px;border-radius:50%;border:0;cursor:pointer;background:var(--gold);color:#201400;font-size:1.35rem;box-shadow:0 10px 24px rgba(0,0,0,.4);display:grid;place-items:center;flex:none;}
+  .sound-fab button.pulse{animation:spulse 1.8s ease-in-out infinite;}
+  @keyframes spulse{0%{box-shadow:0 10px 24px rgba(0,0,0,.4),0 0 0 0 color-mix(in srgb,var(--gold) 55%,transparent);}70%,100%{box-shadow:0 10px 24px rgba(0,0,0,.4),0 0 0 16px transparent;}}
+  @media (prefers-reduced-motion:reduce){ .hero-copy>*{opacity:1;transform:none;animation:none;} .fog i,.hero h1 em,.sound-fab button.pulse{animation:none;} }
   .hero-inner{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center;padding-block:clamp(34px,6vw,60px);}
   .hero h1{font-size:clamp(2rem,6vw,3.3rem);letter-spacing:-.01em;}
   .hero h1 em{font-style:italic;color:var(--red);}
@@ -119,9 +146,9 @@
 </header>
 
 <div class="hero">
-  <canvas id="snow"></canvas>
+  <div class="hero-sky"><div class="moon"></div><div class="fog"><i></i><i></i><i></i></div><canvas id="hero-amb"></canvas><div class="vignette"></div></div>
   <div class="wrap hero-inner">
-    <div>
+    <div class="hero-copy">
       <p class="eyebrow">Personalised · made with love</p>
       <h1 id="hero-title">A cinematic letter from <em>Santa</em>, just for your child.</h1>
       <p class="lead" id="hero-sub">Add a name and a good deed, then watch it come to life with music — free. Love it? Send it for a tiny price.</p>
@@ -225,6 +252,10 @@
     <div class="bar" style="justify-content:center;gap:6px;"><span>© <span id="foot-brand">North Pole Post</span> 🎄 · Secure checkout by Razorpay · Made in India</span></div>
   </div>
 </footer>
+<div class="sound-fab" id="sound-fab">
+  <span class="hint" id="sound-hint">🔊 Tap for sound</span>
+  <button id="sound-btn" class="pulse" aria-label="Toggle music">🔇</button>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="cinematic.js"></script>
@@ -258,7 +289,7 @@
 
   fetch('/api/site-config').then(function(r){ return r.json(); }).then(function(c){
     keyId = c.keyId; ready = c.ready; SEASON = c.season;
-    applyTheme(SEASON.colors); fillSeason(SEASON);
+    applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient();
     if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
   }).catch(function(){});
   fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:'visit'})}).catch(function(){});
@@ -359,17 +390,20 @@
     resetPay(); Cinematic.music.stop(); go('create');
   }
 
-  Cinematic.music.onChange(function(p){ var b=document.getElementById('music-btn'); if(b) b.textContent = p ? '🔔 Music on' : '🔇 Music off'; });
-
   var tTimer; function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tTimer); tTimer=setTimeout(function(){ t.classList.remove('show'); },3000); }
 
+  var heroAmb=null;
+  function startHeroAmbient(){ try{ var el=document.getElementById('hero-amb'); if(!el||!window.Cinematic||!Cinematic.particles) return; if(heroAmb) heroAmb.stop(); heroAmb=Cinematic.particles(el, (SEASON&&SEASON.cine&&SEASON.cine.particle)||'snow'); }catch(e){} }
+
+  // Sound button + start music on the visitor's FIRST interaction (browsers block it before that).
+  function setSoundUI(p){ var b=document.getElementById('sound-btn'); if(b){ b.textContent=p?'🔔':'🔇'; b.classList.toggle('pulse',!p); } var h=document.getElementById('sound-hint'); if(h&&p) h.style.display='none'; }
+  Cinematic.music.onChange(function(p){ setSoundUI(p); var mb=document.getElementById('music-btn'); if(mb) mb.textContent=p?'🔔 Music on':'🔇 Music off'; });
+  document.getElementById('sound-btn').addEventListener('click', function(){ Cinematic.music.toggle(); });
   (function(){
-    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var c=document.getElementById('snow'); if(!c) return; var ctx=c.getContext('2d'),f=[],raf;
-    function sz(){ c.width=c.offsetWidth; c.height=c.offsetHeight; }
-    function sd(){ f=[]; var n=Math.min(60,Math.round(c.width/18)); for(var i=0;i<n;i++) f.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2.2+0.7,s:Math.random()*0.5+0.2,d:Math.random()*0.6-0.3}); }
-    function dr(){ ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='rgba(255,255,255,.45)'; for(var i=0;i<f.length;i++){var p=f[i];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fill();p.y+=p.s;p.x+=p.d;if(p.y>c.height){p.y=-5;p.x=Math.random()*c.width;}} raf=requestAnimationFrame(dr); }
-    sz(); sd(); dr(); if(reduce) cancelAnimationFrame(raf); addEventListener('resize',function(){ sz(); sd(); });
+    var started=false, evs=['pointerdown','touchstart','keydown','scroll','wheel'];
+    function kick(){ if(started) return; started=true; Cinematic.music.start(); var h=document.getElementById('sound-hint'); if(h) h.style.display='none'; evs.forEach(function(ev){ window.removeEventListener(ev, kick, true); }); }
+    evs.forEach(function(ev){ window.addEventListener(ev, kick, true); });
+    setTimeout(function(){ var h=document.getElementById('sound-hint'); if(h && !started) h.style.display='none'; }, 8000);
   })();
 </script>
 </body>

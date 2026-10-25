@@ -34,8 +34,7 @@
   /* ---------- particles (snow / stars / embers / bats / confetti) ---------- */
   var activeParticles = null;
   var CONFETTI_COLORS = ['#f0c860', '#e8b84b', '#ff7a1a', '#4fb286', '#6aa0ff', '#ff6b9d'];
-  function startParticles(canvas, mode) {
-    if (activeParticles) { activeParticles.stop(); activeParticles = null; }
+  function createParticles(canvas, mode) {
     var ctx = canvas.getContext('2d'), raf, items = [], running = true;
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
@@ -76,8 +75,9 @@
     size(); seed(); draw(); if (reduce) { running = false; cancelAnimationFrame(raf); }
     var onResize = function () { size(); seed(); };
     window.addEventListener('resize', onResize);
-    activeParticles = { stop: function () { running = false; cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); } };
+    return { stop: function () { running = false; cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); } };
   }
+  function startParticles(canvas, mode) { if (activeParticles) activeParticles.stop(); activeParticles = createParticles(canvas, mode); }
 
   /* ---------- render a scene ---------- */
   function render(mount, L, tplId, opts) {
@@ -147,6 +147,7 @@
 
   window.Cinematic = {
     templates: TEMPLATES, render: render, music: music, buildLetter: buildLetter,
+    particles: createParticles,
     themeForSeason: function (k) { return SEASON_THEMES[k] || DEFAULT_THEME; }
   };
 })();
