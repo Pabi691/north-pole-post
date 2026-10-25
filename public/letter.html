@@ -9,7 +9,7 @@
 <meta property="og:description" content="Someone sent you a magical personalised letter — tap to open it, with music!">
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@400;600;700;800&display=swap">
-<link rel="stylesheet" href="cinematic.css">
+<link rel="stylesheet" href="/cinematic.css">
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;min-height:100%;}
@@ -66,9 +66,9 @@
 <button class="music" id="music" title="Play / pause music" aria-label="Play or pause music" style="display:none">🔔</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="cinematic.js"></script>
+<script src="/cinematic.js"></script>
 <script>
-  var CARD_AUDIO = { halloween:'bombinsound-halloween-suspense-horror-halloween-waltz-619348.mp3' };  // music for the shared card, per season
+  var CARD_AUDIO = { halloween:'/bombinsound-halloween-suspense-horror-halloween-waltz-619348.mp3' };  // music for the shared card, per season
   var letterCardBlob = null;
   function lookFor(){ return { c1:theme&&theme.c1, c2:theme&&theme.c2, accent:theme&&theme.accent, primary:Cinematic.primaryFor(seasonKey), decor:Cinematic.decorFor(seasonKey) }; }
   function shareImg(){
