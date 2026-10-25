@@ -386,9 +386,17 @@
     for(var i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]);
     return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   }
-  function buildShareUrl(L, sk, ct){
+  function buildPayload(L, sk, ct){
     var payload={ n:L.name, P:L.paragraphs, dt:L.date, em:L.emoji, st:L.senderTitle, sn:L.senderName, dl:L.dateline, bd:L.badge, sk:sk, ct:ct||'globe' };
-    return location.origin + '/letter.html#' + b64urlEncode(payload);
+    return b64urlEncode(payload);
+  }
+  function buildShareUrl(L, sk, ct){ return location.origin + '/letter.html#' + buildPayload(L, sk, ct); }
+  // Last-resort: ask the server to shorten a client-built payload (so the link is NEVER the long one)
+  function shortenFallback(){
+    var h = buildPayload(letterObj, (SEASON&&SEASON.key)||'christmas', state.template);
+    fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({d:h})})
+      .then(function(r){ return r.json(); }).then(function(j){ setShortLink(j.url || (location.origin+'/letter.html#'+h)); })
+      .catch(function(){ setShortLink(location.origin+'/letter.html#'+h); });
   }
   function deviceId(){ try{ var id=localStorage.getItem('npp_device'); if(!id){ id='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); localStorage.setItem('npp_device',id); } return id; }catch(e){ return 'anon'; } }
   function getLocalUses(){ try{ return parseInt(localStorage.getItem('npp_uses')||'0',10)||0; }catch(e){ return 0; } }
@@ -436,8 +444,8 @@
     document.getElementById('email-note').textContent = '🎁 Done! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.';
     fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})})
       .then(function(r){ return r.json(); })
-      .then(function(data){ setShortLink((data&&data.shareUrl) || buildShareUrl(letterObj,(SEASON&&SEASON.key)||'christmas',state.template)); })
-      .catch(function(){ setShortLink(buildShareUrl(letterObj,(SEASON&&SEASON.key)||'christmas',state.template)); });
+      .then(function(data){ if(data && data.shareUrl){ setShortLink(data.shareUrl); } else { shortenFallback(); } })
+      .catch(function(){ shortenFallback(); });
   }
 
   function payAndSend(){

@@ -18,7 +18,9 @@ const { letterEmailHtml, encodeShare } = require('./letter');
 
 const app = express();
 app.use(express.json({ limit: '256kb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: function (res, p) { if (p.endsWith('.html')) res.setHeader('Cache-Control', 'no-store'); }
+}));
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
@@ -153,6 +155,17 @@ app.get('/api/card/:code', async function (req, res) {
 });
 app.get('/c/:code', function (req, res) {
   res.sendFile(path.join(__dirname, 'public', 'letter.html'));
+});
+app.post('/api/shorten', async function (req, res) {
+  try {
+    const hash = String((req.body && req.body.d) || '').slice(0, 6000);
+    if (!hash) return res.status(400).json({ error: 'no data' });
+    const code = genCode();
+    await store.setCard(code, hash);
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+    const host = req.headers.host;
+    res.json({ url: host ? (proto + '://' + host + '/c/' + code) : '' });
+  } catch (e) { res.status(500).json({ error: 'error' }); }
 });
 
 // ---------- admin (password protected) ----------
