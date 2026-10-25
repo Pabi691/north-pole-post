@@ -11,6 +11,7 @@
   background:var(--cine-bg, radial-gradient(120% 95% at 50% 0%, #2a4488, #0a1130 72%)); isolation:isolate; font-family:"Nunito",system-ui,sans-serif;
 }
 .cine-particles{position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none;}
+.cine-particles-fg{position:absolute; inset:0; width:100%; height:100%; z-index:6; pointer-events:none;}
 .cine-stage{position:relative; z-index:2; width:100%; display:grid; place-items:center; padding:26px 16px;}
 .cine-frame{position:relative; width:min(92%,480px);}
 

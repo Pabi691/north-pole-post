@@ -33,6 +33,7 @@
 
   /* ---------- particles (snow / stars / embers / bats / confetti) ---------- */
   var activeParticles = null;
+  var activeFg = null;
   var CONFETTI_COLORS = ['#f0c860', '#e8b84b', '#ff7a1a', '#4fb286', '#6aa0ff', '#ff6b9d'];
   function createParticles(canvas, mode) {
     var ctx = canvas.getContext('2d'), raf, items = [], running = true;
@@ -43,14 +44,15 @@
       items = []; var w = canvas.width, h = canvas.height, n, i;
       if (mode === 'stars') n = Math.min(130, Math.round(w / 8));
       else if (mode === 'embers') n = 44;
-      else if (mode === 'bats') n = Math.min(14, Math.round(w / 60));
+      else if (mode === 'bats') n = Math.min(18, Math.round(w / 48));
+      else if (mode === 'bats-fg') n = Math.min(8, Math.round(w / 120));
       else if (mode === 'confetti') n = Math.min(90, Math.round(w / 9));
       else if (mode === 'snow') n = Math.min(120, Math.round(w / 8));
       else n = Math.min(60, Math.round(w / 16));
       for (i = 0; i < n; i++) {
         if (mode === 'stars') items.push({ x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.6+0.3, tw:Math.random()*6.28, sp:Math.random()*0.045+0.01 });
         else if (mode === 'embers') items.push({ x:Math.random()*w, y:h+Math.random()*h, r:Math.random()*2+1, s:Math.random()*0.9+0.4, d:Math.random()*0.6-0.3, life:Math.random() });
-        else if (mode === 'bats') items.push({ x:Math.random()*w, y:Math.random()*h, s:Math.random()*0.5+0.25, d:Math.random()*0.7-0.35, sz:Math.random()*14+16, ph:Math.random()*6.28 });
+        else if (mode === 'bats' || mode === 'bats-fg') items.push({ x:Math.random()*w, y:Math.random()*h, s:Math.random()*0.55+0.3, d:Math.random()*0.9-0.45, sz:(mode==='bats-fg'?Math.random()*20+36:Math.random()*16+22), ph:Math.random()*6.28 });
         else if (mode === 'confetti') items.push({ x:Math.random()*w, y:Math.random()*h-h, s:Math.random()*1.4+0.8, d:Math.random()*0.8-0.4, rot:Math.random()*6.28, vr:Math.random()*0.2-0.1, col:CONFETTI_COLORS[(Math.random()*CONFETTI_COLORS.length)|0], w:Math.random()*5+4, h:Math.random()*8+5 });
         else items.push({ x:Math.random()*w, y:Math.random()*h, r:Math.random()*2.6+0.8, s:Math.random()*0.6+0.25, d:Math.random()*0.7-0.35 });
       }
@@ -61,9 +63,9 @@
         for (i=0;i<items.length;i++){ p=items[i]; p.tw+=p.sp; var a=0.35+0.65*Math.abs(Math.sin(p.tw)); ctx.fillStyle='rgba(255,255,255,'+a+')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.28); ctx.fill(); }
       } else if (mode === 'embers') {
         for (i=0;i<items.length;i++){ p=items[i]; ctx.fillStyle='rgba(255,'+Math.round(140+90*p.life)+',60,'+(0.5*p.life+0.15)+')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.28); ctx.fill(); p.y-=p.s; p.x+=p.d; p.life-=0.008; if(p.y<0||p.life<=0){ p.y=h+5; p.x=Math.random()*w; p.life=1; } }
-      } else if (mode === 'bats') {
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        for (i=0;i<items.length;i++){ p=items[i]; p.ph+=0.05; ctx.font=p.sz+'px serif'; ctx.globalAlpha=0.85; ctx.fillText('🦇', p.x, p.y+Math.sin(p.ph)*4); ctx.globalAlpha=1; p.y+=p.s; p.x+=p.d+Math.sin(p.ph)*0.4; if(p.y>h+10){ p.y=-10; p.x=Math.random()*w; } if(p.x<-20)p.x=w+10; if(p.x>w+20)p.x=-10; }
+      } else if (mode === 'bats' || mode === 'bats-fg') {
+        ctx.textAlign='center'; ctx.textBaseline='middle'; var batA=(mode==='bats-fg')?0.97:0.88;
+        for (i=0;i<items.length;i++){ p=items[i]; p.ph+=0.05; ctx.font=p.sz+'px serif'; ctx.globalAlpha=batA; ctx.fillText('🦇', p.x, p.y+Math.sin(p.ph)*4); ctx.globalAlpha=1; p.y+=p.s; p.x+=p.d+Math.sin(p.ph)*0.5; if(p.y>h+14){ p.y=-14; p.x=Math.random()*w; } if(p.x<-24)p.x=w+12; if(p.x>w+24)p.x=-12; }
       } else if (mode === 'confetti') {
         for (i=0;i<items.length;i++){ p=items[i]; p.rot+=p.vr; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.col; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); p.y+=p.s; p.x+=p.d; if(p.y>h+10){ p.y=-10; p.x=Math.random()*w; } }
       } else {
@@ -99,7 +101,7 @@
           '<div class="fx-eyes" style="top:15%;left:9%"></div>' +
           '<div class="fx-eyes" style="top:27%;right:11%;animation-delay:2.4s"></div>' +
           '<div class="fx-ghost">👻</div></div>' +
-        '<div class="fx-top"><div class="fx-flash"></div><div class="fx-vignette"></div></div>' +
+        '<div class="fx-top"><div class="fx-flash"></div><div class="fx-vignette"></div></div><canvas class="cine-particles-fg"></canvas>' +
         (opts.scare ? '<div class="fx-scare" id="fx-scare"><span>💀</span></div>' : '');
     }
 
@@ -114,6 +116,8 @@
     cine.style.setProperty('--accent', theme.accent || DEFAULT_THEME.accent);
     cine.style.setProperty('--cine-bg', 'radial-gradient(120% 95% at 50% 0%, ' + (theme.c1 || DEFAULT_THEME.c1) + ', ' + (theme.c2 || DEFAULT_THEME.c2) + ' 72%)');
     startParticles(cine.querySelector('.cine-particles'), theme.particle || 'snow');
+    if (activeFg) { activeFg.stop(); activeFg = null; }
+    if (spooky) { var fgc = cine.querySelector('.cine-particles-fg'); if (fgc) activeFg = createParticles(fgc, 'bats-fg'); }
     requestAnimationFrame(function () { requestAnimationFrame(function () { cine.classList.add('play'); }); });
     if (spooky && opts.scare) { setTimeout(function () { var sc = cine.querySelector('#fx-scare'); if (sc) sc.classList.add('go'); }, 1700); }
     return tpl;
