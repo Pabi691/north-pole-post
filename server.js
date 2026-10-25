@@ -23,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 const FREE_LIMIT = parseInt(process.env.FREE_LIMIT || '10', 10);
+function genCode() { const c = 'abcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < 8; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
 const keysReady = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 const razorpay = keysReady
   ? new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET })
@@ -85,7 +86,10 @@ app.post('/api/verify', async function (req, res) {
 
     const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const host = req.headers.host;
-    const shareUrl = host ? (proto + '://' + host + '/letter.html#' + encodeShare(letter, season.key, cineTpl)) : '';
+    const hash = encodeShare(letter, season.key, cineTpl);
+    let p = '/letter.html#' + hash;  // fallback (long) link if storage is unavailable
+    try { const code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
+    const shareUrl = host ? (proto + '://' + host + p) : '';
 
     let emailed = false;
     if (details.email) {
@@ -119,7 +123,10 @@ app.post('/api/free-unlock', async function (req, res) {
     const cineTpl = details.template || 'globe';
     const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const host = req.headers.host;
-    const shareUrl = host ? (proto + '://' + host + '/letter.html#' + encodeShare(letter, season.key, cineTpl)) : '';
+    const hash = encodeShare(letter, season.key, cineTpl);
+    let p = '/letter.html#' + hash;  // fallback (long) link if storage is unavailable
+    try { const code = genCode(); await store.setCard(code, hash); p = '/c/' + code; } catch (e) {}
+    const shareUrl = host ? (proto + '://' + host + p) : '';
     let emailed = false;
     if (details.email) {
       try { await sendLetterEmail(details.email, season, letter, shareUrl); emailed = true; }
@@ -133,6 +140,18 @@ app.post('/api/free-unlock', async function (req, res) {
     console.error('free-unlock failed:', e && e.message ? e.message : e);
     res.status(500).json({ error: 'Something went wrong.' });
   }
+});
+
+// ---------- short card links ----------
+app.get('/api/card/:code', async function (req, res) {
+  try {
+    const h = await store.getCard(String(req.params.code || '').slice(0, 16));
+    if (!h) return res.status(404).json({ error: 'Card not found.' });
+    res.json({ d: h });
+  } catch (e) { res.status(500).json({ error: 'error' }); }
+});
+app.get('/c/:code', function (req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'letter.html'));
 });
 
 // ---------- admin (password protected) ----------

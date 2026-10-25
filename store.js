@@ -62,6 +62,16 @@ async function getStats() {
   return out;
 }
 
+// ---- short card links (code -> encoded payload) ----
+async function setCard(code, payload) {
+  if (useRedis) { await redis(['SET', 'npp:card:' + code, payload, 'EX', 60 * 60 * 24 * 180]); return; } // 180-day expiry
+  const d = readFile(); d.cards = d.cards || {}; d.cards[code] = payload; writeFile(d);
+}
+async function getCard(code) {
+  if (useRedis) { return await redis(['GET', 'npp:card:' + code]); }
+  const d = readFile(); return (d.cards && d.cards[code]) || null;
+}
+
 // ---- per-device free-usage counters ----
 async function incrDevice(id) {
   if (useRedis) { return parseInt(await redis(['HINCRBY', 'npp:devices', id, 1]), 10); }
@@ -76,4 +86,4 @@ async function listDevices() {
   return (readFile().devices) || {};
 }
 
-module.exports = { getConfig, saveConfig, incr, getStats, incrDevice, getDeviceCount, listDevices, useRedis };
+module.exports = { getConfig, saveConfig, incr, getStats, setCard, getCard, incrDevice, getDeviceCount, listDevices, useRedis };

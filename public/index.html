@@ -419,17 +419,22 @@
     Cinematic.cardImage(letterObj, currentLook()).then(function(b){ cardBlob=b; downloadBlob(b,'santa-card.jpg'); toast('Image saved 🎁'); }).catch(function(){ toast('Could not make image.'); });
   }
 
+  function setShortLink(url){
+    if(!url) return; shareUrl=url;
+    var msg=((letterObj&&letterObj.emoji)||'🎁')+' A card for '+(state.name||'you')+' — open it (with music 🎶): '+url;
+    var wa=document.getElementById('sh-wa'); if(wa) wa.href='https://wa.me/?text='+encodeURIComponent(msg);
+  }
   function freeShare(){
     if(!letterObj){ toast('Make the card first.'); return; }
     if(getLocalUses() >= FREE_LIMIT){ showLimitReached(); return; }
     state.device = deviceId();
     shareCardImage();   // share the card IMAGE in this tap (native share sheet → WhatsApp)
     var nowUsed = getLocalUses()+1; setLocalUses(nowUsed);
-    shareUrl = buildShareUrl(letterObj, (SEASON&&SEASON.key)||'christmas', state.template);
-    unlock({ shareUrl: shareUrl, emailed: false });
+    unlock({ shareUrl: buildShareUrl(letterObj, (SEASON&&SEASON.key)||'christmas', state.template), emailed: false });  // instant (long) link; upgraded to short below
     var left = Math.max(0, FREE_LIMIT - nowUsed);
     document.getElementById('email-note').textContent = '🎁 Done! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.';
-    fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})}).catch(function(){});
+    fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})})
+      .then(function(r){ return r.json(); }).then(function(data){ if(data&&data.shareUrl) setShortLink(data.shareUrl); }).catch(function(){});
   }
 
   function payAndSend(){
