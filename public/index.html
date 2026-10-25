@@ -532,6 +532,18 @@
     evs.forEach(function(ev){ window.addEventListener(ev, kick, true); });
     setTimeout(function(){ var h=document.getElementById('sound-hint'); if(h && !started) h.style.display='none'; }, 8000);
   })();
+  // --- tiny cookie / essential-storage notice (dismissible, remembered) ---
+  (function(){
+    var KEY='npp_cookie_ok';
+    try{ if(localStorage.getItem(KEY)) return; }catch(e){}
+    var bar=document.createElement('div');
+    bar.id='cookie-bar';
+    bar.setAttribute('style','position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;max-width:620px;margin:0 auto;background:#1b1430;color:#f4ecff;border:1px solid #6b3fa0;border-radius:14px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:13px;line-height:1.5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;text-align:center;');
+    bar.innerHTML='🍪 We use only essential cookies to make the site work (no ads, no tracking). See our <a href="/privacy.html" style="color:#ffb05a;text-decoration:underline;">Privacy</a>.'+
+      '<button id="cookie-ok" style="background:#ff7a1a;color:#1a0a00;border:0;font-weight:800;padding:8px 18px;border-radius:999px;cursor:pointer;">Got it</button>';
+    document.body.appendChild(bar);
+    document.getElementById('cookie-ok').onclick=function(){ try{ localStorage.setItem(KEY,'1'); }catch(e){} bar.remove(); };
+  })();
 </script>
 </body>
 </html>
