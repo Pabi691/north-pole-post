@@ -308,7 +308,7 @@
 
   fetch('/api/site-config').then(function(r){ return r.json(); }).then(function(c){
     keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null; FREE = !!c.free; FREE_LIMIT = c.freeLimit || 10;
-    applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key); Cinematic.music.setAudio(SITE_AUDIO[SEASON.key]||null);
+    applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key); Cinematic.music.setAudio(SITE_AUDIO[SEASON.key]||null); tryStartMusic();
     if(FREE){ applyFreeUI(); } else if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
   }).catch(function(){});
   fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:'visit'})}).catch(function(){});
@@ -524,9 +524,11 @@
   function setSoundUI(p){ var b=document.getElementById('sound-btn'); if(b){ b.textContent=p?'🔔':'🔇'; b.classList.toggle('pulse',!p); } var h=document.getElementById('sound-hint'); if(h&&p) h.style.display='none'; }
   Cinematic.music.onChange(function(p){ setSoundUI(p); var mb=document.getElementById('music-btn'); if(mb) mb.textContent=p?'🔔 Music on':'🔇 Music off'; });
   document.getElementById('sound-btn').addEventListener('click', function(){ Cinematic.music.toggle(); });
+  var wantMusic=false;
+  function tryStartMusic(){ if(wantMusic && SEASON && !Cinematic.music.isPlaying()){ Cinematic.music.start(); } }  // only after the real audio file is set
   (function(){
     var started=false, evs=['pointerdown','touchstart','keydown','scroll','wheel'];
-    function kick(){ if(started) return; started=true; Cinematic.music.start(); var h=document.getElementById('sound-hint'); if(h) h.style.display='none'; evs.forEach(function(ev){ window.removeEventListener(ev, kick, true); }); }
+    function kick(){ if(started) return; started=true; wantMusic=true; tryStartMusic(); var h=document.getElementById('sound-hint'); if(h) h.style.display='none'; evs.forEach(function(ev){ window.removeEventListener(ev, kick, true); }); }
     evs.forEach(function(ev){ window.addEventListener(ev, kick, true); });
     setTimeout(function(){ var h=document.getElementById('sound-hint'); if(h && !started) h.style.display='none'; }, 8000);
   })();
