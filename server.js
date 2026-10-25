@@ -22,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
+const FREE_LIMIT = parseInt(process.env.FREE_LIMIT || '10', 10);
 const keysReady = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 const razorpay = keysReady
   ? new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET })
@@ -32,7 +33,7 @@ app.get('/api/site-config', async function (req, res) {
   try {
     const cfg = await store.getConfig();
     const s = activeSeason(cfg);
-    res.json({ keyId: process.env.RAZORPAY_KEY_ID || '', ready: keysReady, season: s, friends: friendsCard(s), free: !!cfg.free });
+    res.json({ keyId: process.env.RAZORPAY_KEY_ID || '', ready: keysReady, season: s, friends: friendsCard(s), free: !!cfg.free, freeLimit: FREE_LIMIT });
   } catch (e) {
     console.error('site-config failed:', e.message);
     res.status(500).json({ error: 'Could not load site config.' });
@@ -108,6 +109,11 @@ app.post('/api/free-unlock', async function (req, res) {
     const cfg = await store.getConfig();
     if (!cfg.free) return res.status(403).json({ error: 'Free mode is off.' });
     const details = (req.body && req.body.details) || {};
+    const device = String(details.device || '').slice(0, 64);
+    if (device) {
+      const already = await store.getDeviceCount(device);
+      if (already >= FREE_LIMIT) return res.status(429).json({ error: 'Free limit reached for this device.', limitReached: true, used: already, limit: FREE_LIMIT });
+    }
     const season = activeSeason(cfg);
     const letter = buildLetter(season, details, details.mode);
     const cineTpl = details.template || 'globe';
@@ -119,8 +125,10 @@ app.post('/api/free-unlock', async function (req, res) {
       try { await sendLetterEmail(details.email, season, letter, shareUrl); emailed = true; }
       catch (e) { console.error('email failed:', e && e.message ? e.message : e); }
     }
+    let used = 0;
+    if (device) { try { used = await store.incrDevice(device); } catch (e) {} }
     try { await store.incr('freebies'); } catch (e) {}
-    res.json({ ok: true, letter: letter, emailed: emailed, shareUrl: shareUrl });
+    res.json({ ok: true, letter: letter, emailed: emailed, shareUrl: shareUrl, used: used, limit: FREE_LIMIT });
   } catch (e) {
     console.error('free-unlock failed:', e && e.message ? e.message : e);
     res.status(500).json({ error: 'Something went wrong.' });
@@ -145,7 +153,8 @@ app.get('/api/admin/data', checkAdmin, async function (req, res) {
   try {
     const stats = await store.getStats();
     const cfg = await store.getConfig();
-    res.json({ stats: stats, config: cfg, storage: store.useRedis ? 'Upstash (persistent)' : 'local file (resets on restart)' });
+    const devices = await store.listDevices();
+    res.json({ stats: stats, config: cfg, devices: devices, freeLimit: FREE_LIMIT, storage: store.useRedis ? 'Upstash (persistent)' : 'local file (resets on restart)' });
   } catch (e) { res.status(500).json({ error: 'Could not load admin data.' }); }
 });
 

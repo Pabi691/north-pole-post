@@ -62,4 +62,18 @@ async function getStats() {
   return out;
 }
 
-module.exports = { getConfig, saveConfig, incr, getStats, useRedis };
+// ---- per-device free-usage counters ----
+async function incrDevice(id) {
+  if (useRedis) { return parseInt(await redis(['HINCRBY', 'npp:devices', id, 1]), 10); }
+  const d = readFile(); d.devices = d.devices || {}; d.devices[id] = (d.devices[id] || 0) + 1; writeFile(d); return d.devices[id];
+}
+async function getDeviceCount(id) {
+  if (useRedis) { const v = await redis(['HGET', 'npp:devices', id]); return parseInt(v || '0', 10); }
+  const d = readFile(); return (d.devices && d.devices[id]) || 0;
+}
+async function listDevices() {
+  if (useRedis) { const a = await redis(['HGETALL', 'npp:devices']); const o = {}; if (Array.isArray(a)) for (let i = 0; i < a.length; i += 2) o[a[i]] = parseInt(a[i + 1] || '0', 10); return o; }
+  return (readFile().devices) || {};
+}
+
+module.exports = { getConfig, saveConfig, incr, getStats, incrDevice, getDeviceCount, listDevices, useRedis };

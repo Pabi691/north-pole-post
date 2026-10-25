@@ -275,6 +275,7 @@
   var SEASON = null;         // active season (from server)
   var FRIENDS_TPL = null;    // friends card for the active season
   var FREE = false;          // free mode (payments hidden)
+  var FREE_LIMIT = 10;       // free cards allowed per device
   var keyId = '', ready = false, shareUrl = '', paid = false, letterObj = null;
 
   function curPrice(){ return (SEASON && SEASON.pricePaise) ? parseInt(SEASON.pricePaise,10) : 1000; }
@@ -305,7 +306,7 @@
   function renderDecor(key){ var row=document.getElementById('decor'); if(!row) return; var list=DECOR[key]||[]; row.innerHTML=list.map(function(e){ return '<span>'+e+'</span>'; }).join(''); }
 
   fetch('/api/site-config').then(function(r){ return r.json(); }).then(function(c){
-    keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null; FREE = !!c.free;
+    keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null; FREE = !!c.free; FREE_LIMIT = c.freeLimit || 10;
     applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key); Cinematic.music.setAudio(SITE_AUDIO[SEASON.key]||null);
     if(FREE){ applyFreeUI(); } else if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
   }).catch(function(){});
@@ -389,13 +390,29 @@
     var payload={ n:L.name, P:L.paragraphs, dt:L.date, em:L.emoji, st:L.senderTitle, sn:L.senderName, dl:L.dateline, bd:L.badge, sk:sk, ct:ct||'globe' };
     return location.origin + '/letter.html#' + b64urlEncode(payload);
   }
+  function deviceId(){ try{ var id=localStorage.getItem('npp_device'); if(!id){ id='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); localStorage.setItem('npp_device',id); } return id; }catch(e){ return 'anon'; } }
+  function getLocalUses(){ try{ return parseInt(localStorage.getItem('npp_uses')||'0',10)||0; }catch(e){ return 0; } }
+  function setLocalUses(n){ try{ localStorage.setItem('npp_uses', String(n)); }catch(e){} }
+
+  function showLimitReached(){
+    var h=document.querySelector('#send-box h3'); if(h) h.textContent='🎃 Free limit reached';
+    var p=document.querySelector('#send-box p'); if(p) p.textContent="You've made "+FREE_LIMIT+" free cards on this device — thank you! Paid sending is coming very soon.";
+    var b=document.getElementById('pay-btn'); if(b){ b.disabled=true; b.textContent='Free limit reached'; }
+    toast("You've used all "+FREE_LIMIT+" free cards 🎃");
+  }
+
   function freeShareWhatsApp(){
     if(!letterObj){ toast('Make the card first.'); return; }
+    if(getLocalUses() >= FREE_LIMIT){ showLimitReached(); return; }
+    state.device = deviceId();
     shareUrl = buildShareUrl(letterObj, (SEASON&&SEASON.key)||'christmas', state.template);
     var who = state.name || 'you';
     var msg = (letterObj.emoji||'🎁')+' A card for '+who+' — open it (with music 🎶): '+shareUrl;
     window.open('https://wa.me/?text='+encodeURIComponent(msg), '_blank');   // opens WhatsApp in this tap
+    var nowUsed = getLocalUses()+1; setLocalUses(nowUsed);
     unlock({ shareUrl: shareUrl, emailed: false });
+    var left = Math.max(0, FREE_LIMIT - nowUsed);
+    document.getElementById('email-note').textContent = '🎁 Shared! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.';
     fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state})}).catch(function(){});
   }
 

@@ -81,6 +81,12 @@
   </div>
 
   <div class="card">
+    <h2 style="margin-bottom:8px">📱 Devices &amp; free usage</h2>
+    <p class="muted" style="margin-bottom:10px">Each device can make up to <b id="fl">10</b> free cards. Here's the per-device count.</p>
+    <div id="devices-box"></div>
+  </div>
+
+  <div class="card">
     <h2 style="margin-bottom:12px">🗓️ Active season</h2>
     <p class="muted" style="margin-bottom:10px">This is what visitors see right now. Switch it any time.</p>
     <div class="save-row">
@@ -195,6 +201,8 @@
         renderStats(d.stats);
         populateSelects();
         loadFree();
+        renderDevices(d.devices || {});
+        var flEl=document.getElementById('fl'); if(flEl) flEl.textContent=(d.freeLimit||10);
         loadSeasonForm(d.config.active);
       })
       .catch(function(){ PW=''; try{ sessionStorage.removeItem('npp_admin_pw'); }catch(e){} document.getElementById('login').style.display='block'; document.getElementById('dash').hidden=true; });
@@ -206,6 +214,16 @@
     var cards=[['Visitors',s.visits],['Previews made',s.previews],['Letters sold',s.purchases],['Free sends',s.freebies||0],['Conversion',conv],['Revenue',rev]];
     document.getElementById('stats').innerHTML=cards.map(function(c){ return '<div class="stat"><div class="n">'+c[1]+'</div><div class="l">'+c[0]+'</div></div>'; }).join('');
     document.getElementById('stats-note').textContent='Visitors = page opens · Previews = letters previewed · Letters sold = paid.';
+  }
+
+  function renderDevices(devices){
+    var box=document.getElementById('devices-box'); if(!box) return;
+    var entries=Object.keys(devices||{}).map(function(k){ return [k,devices[k]]; }).sort(function(a,b){ return b[1]-a[1]; });
+    if(!entries.length){ box.innerHTML='<p class="muted">No device activity yet.</p>'; return; }
+    var totalDevices=entries.length, totalUses=0; entries.forEach(function(e){ totalUses+=e[1]; });
+    var lim=(DATA && DATA.freeLimit)||10;
+    var rows=entries.slice(0,60).map(function(e){ var full=e[1]>=lim; return '<tr><td style="font-family:monospace;padding:4px 0">'+e[0].slice(0,16)+'…</td><td style="text-align:right;font-weight:800;color:'+(full?'var(--red)':'var(--ink)')+'">'+e[1]+' / '+lim+(full?' ·full':'')+'</td></tr>'; }).join('');
+    box.innerHTML='<p class="muted" style="margin-bottom:8px">'+totalDevices+' device(s) · '+totalUses+' free cards made</p><div style="max-height:260px;overflow:auto"><table style="width:100%;border-collapse:collapse"><tr><th style="text-align:left;color:var(--muted);font-size:.78rem">Device</th><th style="text-align:right;color:var(--muted);font-size:.78rem">Free uses</th></tr>'+rows+'</table></div>';
   }
 
   function populateSelects(){
