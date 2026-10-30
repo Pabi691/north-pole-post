@@ -119,6 +119,8 @@
   .mode-toggle{display:flex;gap:10px;}
   .mode-btn{flex:1;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-weight:800;font-size:.95rem;padding:13px 10px;border-radius:12px;cursor:pointer;}
   .mode-btn.active{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,var(--paper));}
+  .style-btn{flex:1;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-weight:800;font-size:.95rem;padding:13px 10px;border-radius:12px;cursor:pointer;}
+  .style-btn.active{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,var(--paper));}
   .music-btn{border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:9px 15px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);font-size:.88rem;}
 
   .send-box,.share-box{margin-top:20px;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--bg);}
@@ -201,14 +203,27 @@
         <input id="f-name" type="text" placeholder="e.g. Aarav" autocomplete="off">
         <div class="err" id="e-name" hidden>Please add a name.</div>
       </div>
-      <div class="two">
+      <div class="two" id="auto-two">
         <div class="field" id="age-field"><label for="f-age">Age <span>(optional)</span></label><input id="f-age" type="number" min="1" max="17" placeholder="e.g. 6"></div>
         <div class="field"><label for="f-city">Town / city <span>(optional)</span></label><input id="f-city" type="text" placeholder="e.g. Kolkata"></div>
       </div>
       <div class="field">
+        <label>How should the card read?</label>
+        <div class="mode-toggle" style="margin-top:6px">
+          <button type="button" class="style-btn active" data-style="auto" onclick="setStyle('auto')">✨ Write it for me</button>
+          <button type="button" class="style-btn" data-style="custom" onclick="setStyle('custom')">✍️ My own words</button>
+        </div>
+      </div>
+      <div class="field" id="deed-field">
         <label for="f-deed" id="lbl-deed">One good thing they did this year</label>
         <textarea id="f-deed" placeholder="e.g. helped look after her baby brother and shared her toys"></textarea>
         <div class="hint" id="hint-deed">This is woven into the card. Keep it short and sweet.</div>
+      </div>
+      <div class="field" id="msg-field" style="display:none">
+        <label for="f-msg">Your message</label>
+        <textarea id="f-msg" maxlength="1500" placeholder="Write exactly what you want on the card…&#10;Each new line becomes a new line on the card."></textarea>
+        <div class="hint">Only these lines show in the card — nothing auto-written. 💡 Add your own sign-off at the end.</div>
+        <div class="err" id="e-msg" hidden>Please write a short message.</div>
       </div>
       <button class="btn btn-primary btn-block" onclick="goPreview()">See the card ✨</button>
     </div>
@@ -272,7 +287,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="cinematic.js"></script>
 <script>
-  var state = { name:'', age:'', city:'', deed:'', email:'', template:'globe', mode:'kids' };
+  var state = { name:'', age:'', city:'', deed:'', email:'', template:'globe', mode:'kids', custom:false, message:'' };
   var SEASON = null;         // active season (from server)
   var FRIENDS_TPL = null;    // friends card for the active season
   var FREE = false;          // free mode (payments hidden)
@@ -334,6 +349,14 @@
     state.template = kids ? 'globe' : 'stars';
   }
 
+  function setStyle(s){
+    state.custom = (s==='custom');
+    Array.prototype.forEach.call(document.querySelectorAll('.style-btn'), function(b){ b.classList.toggle('active', b.getAttribute('data-style')===s); });
+    document.getElementById('deed-field').style.display = state.custom ? 'none' : '';
+    document.getElementById('auto-two').style.display = state.custom ? 'none' : '';
+    document.getElementById('msg-field').style.display = state.custom ? '' : 'none';
+  }
+
   function goPreview(){
     if(!SEASON){ toast('One moment — still loading…'); return; }
     var name=document.getElementById('f-name').value.trim();
@@ -343,6 +366,9 @@
     state.age=document.getElementById('f-age').value.trim();
     state.city=document.getElementById('f-city').value.trim();
     state.deed=document.getElementById('f-deed').value.trim();
+    state.message=document.getElementById('f-msg').value.trim();
+    if(state.custom && !state.message){ document.getElementById('e-msg').hidden=false; return; }
+    document.getElementById('e-msg').hidden=true;
     if(!state.template) state.template='globe';
     letterObj=Cinematic.buildLetter(cardForMode(), state);
     buildSwitch();
@@ -510,7 +536,7 @@
 
   function restart(){
     paid=false; shareUrl='';
-    ['f-name','f-age','f-city','f-deed','f-email'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    ['f-name','f-age','f-city','f-deed','f-msg','f-email'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
     document.getElementById('share-box').hidden=true; document.getElementById('send-box').hidden=false;
     resetPay(); Cinematic.music.stop(); go('create');
   }

@@ -125,14 +125,20 @@ function buildFromCard(card, details) {
     deed: (details.deed == null ? '' : String(details.deed)).trim()
   };
   const L = card.letter || {};
-  const p = [];
-  p.push(fill(L.greeting, d));
-  p.push(fill(L.intro, d));
-  p.push(d.deed ? fill(L.deed, d) : fill(L.noDeed, d));
-  if (d.age && L.age) p.push(fill(L.age, d));
-  const cityLine = d.city ? fill(L.cityLine, d) : '';
-  p.push(fill(L.closing, Object.assign({}, d, { cityLine: cityLine })));
-  p.push(fill(L.signoff, d));
+  let p = [];
+  const custom = details.custom && String(details.message || '').trim();
+  if (custom) {
+    String(details.message).slice(0, 1500).split(/\n+/).forEach(function (line) { line = line.trim(); if (line) p.push(line); });
+    p = p.slice(0, 15);
+  } else {
+    p.push(fill(L.greeting, d));
+    p.push(fill(L.intro, d));
+    p.push(d.deed ? fill(L.deed, d) : fill(L.noDeed, d));
+    if (d.age && L.age) p.push(fill(L.age, d));
+    const cityLine = d.city ? fill(L.cityLine, d) : '';
+    p.push(fill(L.closing, Object.assign({}, d, { cityLine: cityLine })));
+    p.push(fill(L.signoff, d));
+  }
 
   const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
   return {

@@ -155,12 +155,19 @@
   function buildLetter(season, details){
     details = details || {}; var Lt = (season && season.letter) || {};
     var d = { name:cap(details.name)||'Friend', age:(details.age==null?'':String(details.age)).trim(), city:cap(details.city), deed:(details.deed==null?'':String(details.deed)).trim() };
-    var p=[]; p.push(fill(Lt.greeting,d)); p.push(fill(Lt.intro,d));
-    p.push(d.deed?fill(Lt.deed,d):fill(Lt.noDeed,d));
-    if(d.age && Lt.age) p.push(fill(Lt.age,d));
-    var cityLine = d.city ? fill(Lt.cityLine,d) : '';
-    p.push(fill(Lt.closing, Object.assign({},d,{cityLine:cityLine})));
-    p.push(fill(Lt.signoff,d));
+    var p=[];
+    var custom = details.custom && String(details.message||'').trim();
+    if(custom){
+      String(details.message).slice(0,1500).split(/\n+/).forEach(function(line){ line=line.trim(); if(line) p.push(line); });
+      p=p.slice(0,15);
+    } else {
+      p.push(fill(Lt.greeting,d)); p.push(fill(Lt.intro,d));
+      p.push(d.deed?fill(Lt.deed,d):fill(Lt.noDeed,d));
+      if(d.age && Lt.age) p.push(fill(Lt.age,d));
+      var cityLine = d.city ? fill(Lt.cityLine,d) : '';
+      p.push(fill(Lt.closing, Object.assign({},d,{cityLine:cityLine})));
+      p.push(fill(Lt.signoff,d));
+    }
     var date=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
     return { name:d.name, paragraphs:p, date:date, emoji:season.emoji, senderName:season.senderName, senderTitle:season.senderTitle, dateline:season.dateline, badge:season.badge };
   }
