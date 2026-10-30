@@ -169,7 +169,7 @@
       <div class="chart-box"><canvas id="chart-visitors"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-h"><h2>📱 Devices &amp; free usage</h2><span class="hint">up to <b id="fl">10</b> free cards each</span></div>
+      <div class="card-h"><h2>📱 Devices &amp; free usage</h2><span class="hint" id="fl-hint">up to <b id="fl">10</b> free cards each</span></div>
       <div id="devices-box"></div>
     </div>
   </div>
@@ -288,7 +288,7 @@
         document.getElementById('login').style.display='none';
         document.getElementById('dash').hidden=false;
         renderStatus(d); renderAllTiles(d.stats); renderTxns(d.txns||[]); renderDevices(d.devices||{});
-        var flEl=document.getElementById('fl'); if(flEl) flEl.textContent=(d.freeLimit||10);
+        var flh=document.getElementById('fl-hint'); if(flh) flh.innerHTML=((d.freeLimit||0)>0)?('up to <b>'+d.freeLimit+'</b> free cards each'):'♾️ unlimited free cards each';
         populateSelects(); loadFree(); loadSeasonForm(d.config.active);
         showTab(TAB);
         startAutoRefresh();
@@ -370,8 +370,9 @@
     var entries=Object.keys(devices||{}).map(function(k){ return [k,devices[k]]; }).sort(function(a,b){ return b[1]-a[1]; });
     if(!entries.length){ box.innerHTML='<p class="muted">No device activity yet.</p>'; return; }
     var totalDevices=entries.length, totalUses=0; entries.forEach(function(e){ totalUses+=e[1]; });
-    var lim=(DATA && DATA.freeLimit)||10;
-    var rows=entries.slice(0,100).map(function(e){ var full=e[1]>=lim; return '<tr><td class="mono">'+e[0].slice(0,18)+'…</td><td style="text-align:right;font-weight:800;color:'+(full?'var(--red)':'var(--ink)')+'">'+e[1]+' / '+lim+(full?' · full':'')+'</td></tr>'; }).join('');
+    var lim=(DATA && DATA.freeLimit)||0;
+    var unlimited=!(lim>0);
+    var rows=entries.slice(0,100).map(function(e){ var full=!unlimited && e[1]>=lim; var usesTxt=unlimited?(e[1]+' card'+(e[1]===1?'':'s')):(e[1]+' / '+lim+(full?' · full':'')); return '<tr><td class="mono">'+e[0].slice(0,18)+'…</td><td style="text-align:right;font-weight:800;color:'+(full?'var(--red)':'var(--ink)')+'">'+usesTxt+'</td></tr>'; }).join('');
     box.innerHTML='<p class="muted" style="margin-bottom:10px;font-weight:700">'+totalDevices+' device(s) · '+totalUses+' free cards made</p><div class="tbl-wrap"><table><thead><tr><th>Device</th><th style="text-align:right">Free uses</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
 

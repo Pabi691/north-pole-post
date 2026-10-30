@@ -335,7 +335,7 @@
   var SEASON = null;         // active season (from server)
   var FRIENDS_TPL = null;    // friends card for the active season
   var FREE = false;          // free mode (payments hidden)
-  var FREE_LIMIT = 10;       // free cards allowed per device
+  var FREE_LIMIT = 0;        // free cards allowed per device (0 = unlimited)
   var keyId = '', ready = false, shareUrl = '', paid = false, letterObj = null;
 
   function curPrice(){ return (SEASON && SEASON.pricePaise) ? parseInt(SEASON.pricePaise,10) : 1000; }
@@ -366,7 +366,7 @@
   function renderDecor(key){ var row=document.getElementById('decor'); if(!row) return; var list=DECOR[key]||[]; row.innerHTML=list.map(function(e){ return '<span>'+e+'</span>'; }).join(''); }
 
   fetch('/api/site-config').then(function(r){ return r.json(); }).then(function(c){
-    keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null; FREE = !!c.free; FREE_LIMIT = c.freeLimit || 10;
+    keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null; FREE = !!c.free; FREE_LIMIT = (typeof c.freeLimit==='number') ? c.freeLimit : 10;
     applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key); Cinematic.music.setAudio(SITE_AUDIO[SEASON.key]||null); tryStartMusic();
     if(FREE){ applyFreeUI(); } else if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
     setMode('friends'); setStyle('custom'); renderMsgTemplates();
@@ -506,7 +506,7 @@
   }
   function freeShare(){
     if(!letterObj){ toast('Make the card first.'); return; }
-    if(getLocalUses() >= FREE_LIMIT){ showLimitReached(); return; }
+    if(FREE_LIMIT>0 && getLocalUses() >= FREE_LIMIT){ showLimitReached(); return; }
     var email=document.getElementById('f-email').value.trim();
     if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('e-email').hidden=false; return; }
     document.getElementById('e-email').hidden=true; state.email=email;
@@ -516,7 +516,8 @@
     unlock({ shareUrl: '', emailed: false });  // link is filled in (SHORT) once the server responds — no long link ever shown
     var _wa=document.getElementById('sh-wa'); if(_wa){ _wa.textContent='🔗 Preparing link…'; _wa.removeAttribute('href'); }
     var left = Math.max(0, FREE_LIMIT - nowUsed);
-    document.getElementById('email-note').textContent = '🎁 Done! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.' + (email ? ' Emailing a copy…' : '');
+    var note = (FREE_LIMIT>0) ? ('🎁 Done! You have ' + left + ' free card' + (left===1?'':'s') + ' left on this device.') : '🎁 Done! Your card is ready to share.';
+    document.getElementById('email-note').textContent = note + (email ? ' Emailing a copy…' : '');
     var fire = function(imgB64){
       fetch('/api/free-unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:state, image:imgB64||null})})
         .then(function(r){ return r.json(); })

@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
-const FREE_LIMIT = parseInt(process.env.FREE_LIMIT || '10', 10);
+const FREE_LIMIT = parseInt(process.env.FREE_LIMIT, 10) || 0;  // 0 = unlimited free cards per device
 function genCode() { const c = 'abcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < 8; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
 async function bump(field, by) { try { await store.incr(field, by || 1); await store.incrDaily(field, by || 1); } catch (e) {} }
 const keysReady = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
@@ -132,7 +132,7 @@ app.post('/api/free-unlock', async function (req, res) {
     if (!cfg.free) return res.status(403).json({ error: 'Free mode is off.' });
     const details = (req.body && req.body.details) || {};
     const device = String(details.device || '').slice(0, 64);
-    if (device) {
+    if (device && FREE_LIMIT > 0) {
       const already = await store.getDeviceCount(device);
       if (already >= FREE_LIMIT) return res.status(429).json({ error: 'Free limit reached for this device.', limitReached: true, used: already, limit: FREE_LIMIT });
     }
