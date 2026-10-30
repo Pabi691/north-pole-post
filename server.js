@@ -113,7 +113,8 @@ app.post('/api/verify', async function (req, res) {
           pid: String(razorpay_payment_id || '').slice(0, 40),
           email: String((pay && pay.email) || details.email || '').slice(0, 80),
           contact: String((pay && pay.contact) || '').slice(0, 20),
-          method: String((pay && pay.method) || '').slice(0, 16)
+          method: String((pay && pay.method) || '').slice(0, 16),
+          link: String(shareUrl || '').slice(0, 200)
         });
       } catch (e) {}
       if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, imageUrl); } catch (mailErr) { console.error('email failed:', mailErr && mailErr.message ? mailErr.message : mailErr); } }
@@ -154,7 +155,7 @@ app.post('/api/free-unlock', async function (req, res) {
     setImmediate(async function () {
       let imageUrl = '';
       if (image && code && host) { try { await store.setCardImage(code, image); imageUrl = proto + '://' + host + '/ci/' + code; } catch (e) {} }
-      try { await bump('freebies'); await store.logTxn({ t: Date.now(), type: 'free', season: season.key, amount: 0, name: String(details.name || '').slice(0, 40), device: device, email: String(details.email || '').slice(0, 80) }); } catch (e) {}
+      try { await bump('freebies'); await store.logTxn({ t: Date.now(), type: 'free', season: season.key, amount: 0, name: String(details.name || '').slice(0, 40), device: device, email: String(details.email || '').slice(0, 80), link: String(shareUrl || '').slice(0, 200) }); } catch (e) {}
       if (details.email) { try { await sendLetterEmail(details.email, season, letter, shareUrl, imageUrl); } catch (e) { console.error('email failed:', e && e.message ? e.message : e); } }
     });
   } catch (e) {

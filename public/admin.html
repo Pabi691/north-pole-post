@@ -157,7 +157,7 @@
     </div>
     <div class="card">
       <div class="card-h"><h2>🧾 Recent transactions</h2><span class="hint" id="txn-count"></span></div>
-      <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Type</th><th>Card for</th><th>Customer</th><th>Payment ID</th><th style="text-align:right">Amount</th></tr></thead><tbody id="txn-rows"></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Type</th><th>Card for</th><th>Customer</th><th>Payment ID</th><th>Card link</th><th style="text-align:right">Amount</th></tr></thead><tbody id="txn-rows"></tbody></table></div>
     </div>
   </div>
 
@@ -334,7 +334,7 @@
   function renderTxns(txns){
     document.getElementById('txn-count').textContent = txns.length ? (txns.length+' shown') : '';
     var body=document.getElementById('txn-rows');
-    if(!txns.length){ body.innerHTML='<tr><td colspan="6" class="muted" style="padding:16px 0">No transactions yet.</td></tr>'; return; }
+    if(!txns.length){ body.innerHTML='<tr><td colspan="7" class="muted" style="padding:16px 0">No transactions yet.</td></tr>'; return; }
     var esc=function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
     var dash='<span class="muted">—</span>';
     body.innerHTML = txns.map(function(x){
@@ -346,7 +346,9 @@
       if(x.contact) cust += (cust?'<br>':'')+'<span class="muted">'+esc(x.contact)+'</span>';
       if(!cust) cust = dash;
       var pid = x.pid ? ('<span class="mono" style="font-size:11px">'+esc(x.pid)+'</span>'+(x.method?' <span class="muted">('+esc(x.method)+')</span>':'')) : dash;
-      return '<tr><td class="mono">'+fmtTime(x.t)+'</td><td>'+badge+'</td><td>'+forName+'</td><td>'+cust+'</td><td>'+pid+'</td><td style="text-align:right;font-weight:800">'+amt+'</td></tr>';
+      var link = dash;
+      if(x.link){ var vis=(x.link.indexOf('/c/')>=0)?x.link.slice(x.link.indexOf('/c/')):'open'; link='<a href="'+esc(x.link)+'" target="_blank" rel="noopener" class="mono" style="font-size:11px;color:#6ea8fe;text-decoration:underline">'+esc(vis)+' ↗</a>'; }
+      return '<tr><td class="mono">'+fmtTime(x.t)+'</td><td>'+badge+'</td><td>'+forName+'</td><td>'+cust+'</td><td>'+pid+'</td><td>'+link+'</td><td style="text-align:right;font-weight:800">'+amt+'</td></tr>';
     }).join('');
   }
 
