@@ -291,9 +291,22 @@
         var flEl=document.getElementById('fl'); if(flEl) flEl.textContent=(d.freeLimit||10);
         populateSelects(); loadFree(); loadSeasonForm(d.config.active);
         showTab(TAB);
+        startAutoRefresh();
       })
       .catch(function(){ PW=''; try{ sessionStorage.removeItem('npp_admin_pw'); }catch(e){} document.getElementById('login').style.display='block'; document.getElementById('dash').hidden=true; });
   }
+
+  // Light auto-refresh: update stats/transactions/devices every 30s without
+  // touching the editable Settings form (so unsaved edits aren't wiped).
+  var _auto=null;
+  function refreshData(){
+    if(!PW) return;
+    fetch('/api/admin/data',{headers:{'x-admin-password':PW}})
+      .then(function(r){ if(r.status===401){ throw new Error('401'); } return r.json(); })
+      .then(function(d){ DATA=d; renderStatus(d); renderAllTiles(d.stats); renderTxns(d.txns||[]); renderDevices(d.devices||{}); if(typeof renderCharts==='function') renderCharts(TAB); })
+      .catch(function(){});
+  }
+  function startAutoRefresh(){ if(_auto) return; _auto=setInterval(function(){ if(!document.hidden) refreshData(); }, 30000); }
 
   function money(paise){ var r=(paise||0)/100; return '₹'+((r%1===0)?r.toFixed(0):r.toFixed(2)); }
 
