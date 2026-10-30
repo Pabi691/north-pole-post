@@ -121,6 +121,10 @@
   .mode-btn.active{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,var(--paper));}
   .style-btn{flex:1;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-weight:800;font-size:.95rem;padding:13px 10px;border-radius:12px;cursor:pointer;}
   .style-btn.active{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,var(--paper));}
+  .msg-tpls{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;}
+  .msg-tpl{border:1.5px solid var(--line);background:var(--bg);color:var(--muted);font-family:inherit;font-size:.82rem;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer;}
+  .msg-tpl:hover{border-color:var(--gold);color:var(--ink);}
+  .msg-tpls-hint{font-size:.82rem;color:var(--muted);margin:0 0 8px;}
   .music-btn{border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:9px 15px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink);font-size:.88rem;}
 
   .send-box,.share-box{margin-top:20px;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--bg);}
@@ -194,33 +198,35 @@
       <p class="eyebrow" style="color:var(--gold)">Step 1 of 2</p>
       <h2 style="font-size:1.6rem;margin:6px 0 10px">Who is this card for?</h2>
       <div class="mode-toggle">
-        <button type="button" class="mode-btn active" data-mode="kids" onclick="setMode('kids')">🧒 For a child</button>
-        <button type="button" class="mode-btn" data-mode="friends" onclick="setMode('friends')">🖤 For a friend</button>
+        <button type="button" class="mode-btn" data-mode="kids" onclick="setMode('kids')">🧒 For a child</button>
+        <button type="button" class="mode-btn active" data-mode="friends" onclick="setMode('friends')">🖤 For a friend</button>
       </div>
-      <p id="create-sub" style="color:var(--muted);margin:14px 0 20px">Little details make it feel real — and it's free to preview.</p>
+      <p id="create-sub" style="color:var(--muted);margin:14px 0 20px">A card to send a friend — free to preview, then send for a tiny price.</p>
       <div class="field">
-        <label for="f-name" id="lbl-name">Child's first name</label>
+        <label for="f-name" id="lbl-name">Your friend's name</label>
         <input id="f-name" type="text" placeholder="e.g. Aarav" autocomplete="off">
         <div class="err" id="e-name" hidden>Please add a name.</div>
       </div>
-      <div class="two" id="auto-two">
+      <div class="two" id="auto-two" style="display:none">
         <div class="field" id="age-field"><label for="f-age">Age <span>(optional)</span></label><input id="f-age" type="number" min="1" max="17" placeholder="e.g. 6"></div>
         <div class="field"><label for="f-city">Town / city <span>(optional)</span></label><input id="f-city" type="text" placeholder="e.g. Kolkata"></div>
       </div>
       <div class="field">
         <label>How should the card read?</label>
         <div class="mode-toggle" style="margin-top:6px">
-          <button type="button" class="style-btn active" data-style="auto" onclick="setStyle('auto')">✨ Write it for me</button>
-          <button type="button" class="style-btn" data-style="custom" onclick="setStyle('custom')">✍️ My own words</button>
+          <button type="button" class="style-btn" data-style="auto" onclick="setStyle('auto')">✨ Write it for me</button>
+          <button type="button" class="style-btn active" data-style="custom" onclick="setStyle('custom')">✍️ My own words</button>
         </div>
       </div>
-      <div class="field" id="deed-field">
+      <div class="field" id="deed-field" style="display:none">
         <label for="f-deed" id="lbl-deed">One good thing they did this year</label>
         <textarea id="f-deed" placeholder="e.g. helped look after her baby brother and shared her toys"></textarea>
         <div class="hint" id="hint-deed">This is woven into the card. Keep it short and sweet.</div>
       </div>
-      <div class="field" id="msg-field" style="display:none">
+      <div class="field" id="msg-field">
         <label for="f-msg">Your message</label>
+        <div class="msg-tpls-hint">✨ Tap a ready-made message to fill it in — then edit if you like:</div>
+        <div class="msg-tpls" id="msg-tpls"></div>
         <textarea id="f-msg" maxlength="1500" placeholder="Write exactly what you want on the card…&#10;Each new line becomes a new line on the card."></textarea>
         <div class="hint">Only these lines show in the card — nothing auto-written. 💡 Add your own sign-off at the end.</div>
         <div class="err" id="e-msg" hidden>Please write a short message.</div>
@@ -287,7 +293,45 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="cinematic.js"></script>
 <script>
-  var state = { name:'', age:'', city:'', deed:'', email:'', template:'globe', mode:'kids', custom:false, message:'' };
+  var state = { name:'', age:'', city:'', deed:'', email:'', template:'stars', mode:'friends', custom:true, message:'' };
+
+  // Ready-made messages (per season) for the "My own words" quick-pick chips.
+  var MSG_TEMPLATES_BY_SEASON = {
+    halloween: [
+      { label:'👻 Spooky', text:"Boo! 👻 Hope your Halloween is wickedly fun. Grab your treats, watch out for tricks, and have a frightfully good night! 🎃" },
+      { label:'🖤 Funny', text:"Happy Halloween! 🖤 You're scarier than anything out tonight 😄 Have the spookiest, most fun night ever!" },
+      { label:'🎃 Sweet', text:"Trick or treat! 🎃 Sending you a little Halloween magic and a lot of love. Hope your night is full of candy and good scares! 👻" },
+      { label:'🦇 Hype', text:"Wishing you a spine-tingling, candy-filled Halloween! 🦇 May your costume be epic and your treats be plenty. Boo to you! 🖤" },
+      { label:'🕸️ Chill', text:"It's Halloween! 🕸️ Spooky vibes, scary movies, and way too much candy. Have a frightfully fun night, my favourite ghoul! 👻🎃" }
+    ],
+    christmas: [
+      { label:'🎄 Classic', text:"Merry Christmas! 🎄 Wishing you cosy nights, good food, and a heart full of joy this season. You deserve all of it! ✨" },
+      { label:'❄️ Warm', text:"Happy Holidays! ❄️ May your days be merry and bright, and your coffee always warm. So glad to have you in my life! 🤍" },
+      { label:'🎁 Fun', text:"Ho ho ho! 🎁 Hope Santa spoils you rotten this year. Eat lots, laugh loads, and have the merriest Christmas ever! 🎅" },
+      { label:'⭐ Heartfelt', text:"Merry Christmas! ⭐ Thank you for being one of the best parts of my year. Wishing you peace, love, and lots of magic. 🎄" },
+      { label:'☃️ Cheery', text:"'Tis the season! ☃️ Sending you warm hugs, happy vibes, and a sleigh-load of good wishes. Merry Christmas, my friend! 🎁" }
+    ],
+    newyear: [
+      { label:'🥂 Classic', text:"Happy New Year! 🥂 Here's to new beginnings, big dreams, and an amazing year ahead. Let's make it unforgettable! ✨" },
+      { label:'🎆 Hype', text:"Cheers to a brand new year! 🎆 May it be your best one yet — full of laughter, luck, and good surprises. Happy New Year! 🥳" },
+      { label:'⭐ Heartfelt', text:"Happy New Year! ⭐ Thank you for being part of my story this year. Wishing you health, happiness, and all your dreams in the next. 🤍" },
+      { label:'🎉 Fun', text:"New year, new adventures! 🎉 Let's make some noise, chase big goals, and have way too much fun. Happy New Year, my friend! 🥂" },
+      { label:'🌟 Simple', text:"Wishing you a year full of joy, success, and good vibes! 🌟 Happy New Year — let's make it count! 🎆" }
+    ]
+  };
+  function msgTemplates(){ return MSG_TEMPLATES_BY_SEASON[(SEASON&&SEASON.key)] || MSG_TEMPLATES_BY_SEASON.halloween; }
+  function renderMsgTemplates(){
+    var box=document.getElementById('msg-tpls'); if(!box) return;
+    var tpls=msgTemplates();
+    box.innerHTML = tpls.map(function(t,i){ return '<button type="button" class="msg-tpl" data-i="'+i+'">'+t.label+'</button>'; }).join('');
+    Array.prototype.forEach.call(box.querySelectorAll('.msg-tpl'), function(b){
+      b.addEventListener('click', function(){
+        var t=msgTemplates()[+b.getAttribute('data-i')]; if(!t) return;
+        var ta=document.getElementById('f-msg'); ta.value=t.text; ta.focus();
+        var e=document.getElementById('e-msg'); if(e) e.hidden=true;
+      });
+    });
+  }
   var SEASON = null;         // active season (from server)
   var FRIENDS_TPL = null;    // friends card for the active season
   var FREE = false;          // free mode (payments hidden)
@@ -325,6 +369,7 @@
     keyId = c.keyId; ready = c.ready; SEASON = c.season; FRIENDS_TPL = c.friends || null; FREE = !!c.free; FREE_LIMIT = c.freeLimit || 10;
     applyTheme(SEASON.colors); fillSeason(SEASON); startHeroAmbient(); renderDecor(SEASON.key); Cinematic.music.setSeason(SEASON.key); Cinematic.music.setAudio(SITE_AUDIO[SEASON.key]||null); tryStartMusic();
     if(FREE){ applyFreeUI(); } else if(!ready){ document.getElementById('not-ready').style.display='flex'; document.getElementById('pay-btn').disabled=true; }
+    setMode('friends'); setStyle('custom'); renderMsgTemplates();
   }).catch(function(){});
   fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event:'visit'})}).catch(function(){});
 
